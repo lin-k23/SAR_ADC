@@ -1,0 +1,7 @@
+	1	2
+out_sequence	1	2
+shift_sequence	0	1
+kb_include	0	1
+seg_check	1	0
+seg_check	0	1
+seg_check	8	1
