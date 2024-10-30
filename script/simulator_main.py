@@ -24,5 +24,5 @@ v_in_p, v_in_n = signal_source(pr, mdl, v_in_peak)
 da = RISCA_core(mdl, pr, v_in_p, v_in_n)
 
 # run analysis
-test=AnalyserSar(da,pr)
+test = AnalyserSar(da, pr)
 test.no_calibration()

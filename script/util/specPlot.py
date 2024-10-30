@@ -24,10 +24,10 @@ def specPlot(
     isPlot=1,
 ):
 
-    M, N = data.shape
+    N, M = (data).shape
 
     if maxCode is None:
-        maxCode = np.max(data) - np.min(data)
+        maxCode = np.max(np.max(data)) - np.min(np.min(data))
 
     Nd2 = N // 2
     freq = np.arange(Nd2) / N * Fs
@@ -37,7 +37,7 @@ def specPlot(
     ME = 0
 
     for iter in range(M):
-        tdata = data[iter, :]
+        tdata = data[:, iter]
         if np.sqrt(np.mean(tdata**2)) == 0:  # RMS = 0
             continue
         tdata = tdata / maxCode
@@ -154,5 +154,6 @@ def specPlot(
             plt.xlabel("Freq (Hz)")
             plt.ylabel("dBFS")
             plt.title("Output Spectrum")
+            plt.show()
 
     return ENoB, SNDR, SFDR, SNR, THD, pwr, NF, None if not isPlot else plt.gca()
