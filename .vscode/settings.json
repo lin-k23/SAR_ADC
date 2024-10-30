@@ -2,5 +2,6 @@
     "files.associations": {
         "cmath": "c",
         "complex": "c"
-    }
+    },
+    "python.formatting.provider": "black",
 }

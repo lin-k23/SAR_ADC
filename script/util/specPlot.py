@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def alias(J, N):
-    if (J // N * 2) % 2 == 0:
+    if (J*2//N) % 2 == 0:
         bin_value = J - (J // N) * N
     else:
         bin_value = N - J + (J // N) * N

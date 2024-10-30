@@ -19,7 +19,6 @@ v_in_peak = [0.85, 0]
 v_in_p, v_in_n = signal_source(pr, mdl, v_in_peak)
 
 # 以上无误
-# v_in_p, v_in_n 符合预期
 
 # Instantiate the device under test
 da = RISCA_core(mdl, pr, v_in_p, v_in_n)
