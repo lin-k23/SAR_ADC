@@ -42,6 +42,7 @@ def specPlot(
             continue
         tdata = tdata / maxCode
         tdata = tdata - np.mean(tdata)
+        # tdata本身无误
         tdata = tdata * win / np.sqrt(np.mean(win**2))
         spec += np.abs(np.fft.fft(tdata)) ** 2
         ME += 1
@@ -106,7 +107,7 @@ def specPlot(
                     ha="center",
                 )
 
-    spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin, Nd2)] = 0
+    spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin, Nd2) + 1] = 0
     noi = np.sum(spec)
 
     sbin = np.argmax(spec)

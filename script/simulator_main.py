@@ -10,8 +10,6 @@ mdl = preset_mdl()
 
 # 调用函数获取测试参数
 pr = preset_pr()
-# print(pr)
-# print(pr_loaded)
 
 # 定义输入信号峰值
 v_in_peak = [0.85, 0]
