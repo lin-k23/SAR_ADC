@@ -66,6 +66,9 @@ def specPlot(
             spec[max(b + 1 - sideBin, 0) : min(b + 1 + sideBin, Nd2)] = 0
 
     if isPlot:
+        # avoid log(0)
+        spec[spec == 0] = 10 ** (-20)
+
         if logSca == 0:
             plt.plot(freq, 10 * np.log10(spec))
         else:
@@ -155,6 +158,6 @@ def specPlot(
             plt.xlabel("Freq (Hz)")
             plt.ylabel("dBFS")
             plt.title("Output Spectrum")
-            plt.show()
+            # plt.show()
 
     return ENoB, SNDR, SFDR, SNR, THD, pwr, NF, None if not isPlot else plt.gca()

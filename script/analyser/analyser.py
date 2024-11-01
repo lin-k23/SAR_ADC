@@ -39,10 +39,13 @@ class AnalyserSar:
         # plt.show()
 
         plt.subplot(2, 1, 2)
-        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, _ = specPlot(
+        # ENoB, SNDR, SFDR, SNR, THD, pwr, NF, _ = specPlot(
+        #     data_nocal.reshape(1, -1).T, self.pr["F_s"], np.sum(self.weight_nom)
+        # )
+        _, _, _, _, _, _, _, _ = specPlot(
             data_nocal.reshape(1, -1).T, self.pr["F_s"], np.sum(self.weight_nom)
         )
-
+        plt.show()
         offset_nocal = np.mean(data_nocal) - np.sum(self.weight_nom) / 2
         print(f"offset_nocal = {offset_nocal:.2f} LSB")
 
