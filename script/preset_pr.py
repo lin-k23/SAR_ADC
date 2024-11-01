@@ -1,6 +1,6 @@
 from util.load_assembler_xlsx import load_assembler_xlsx
 
-# import pandas as pd
+import pandas as pd
 
 
 def preset_pr():
@@ -53,11 +53,16 @@ def preset_pr():
     # 打印读取到的 Excel 配置文件
     if "T_assembler" in pr:
         print("Loaded Excel configuration:")
-        print(pr["T_assembler"])
+        # print(pr["T_assembler"])
         # data frame
-        # cfg_info = pd.DataFrame(pr["T_assembler"])
-        # cfg_info.style
-
+    #     cfg_info = pd.DataFrame(pr["T_assembler"])
+    #     styled_df = (
+    #         cfg_info.style.set_table_attributes('class="dataframe table table-striped"')
+    #         .set_precision(2)
+    #         .highlight_max(color="lightgreen")
+    #         .highlight_min(color="lightcoral")
+    #     )
+    # print(styled_df)
     # 返回组合后的参数字典
     return pr
 
