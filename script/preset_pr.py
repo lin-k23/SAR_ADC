@@ -1,5 +1,6 @@
 from util.load_assembler_xlsx import load_assembler_xlsx
-import pandas as pd
+
+# import pandas as pd
 
 
 def preset_pr():
@@ -38,11 +39,13 @@ def preset_pr():
         "conf_name": "sar",
     }
 
-    # 配置文件的路径（假设配置文件都放在某个路径下）
-    path_config = "..\\config\\"  # 需要根据你的实际情况修改路径
+    # 把pr["conf_name"]和path_config拼接起来，得到配置文件的路径
+    path_config = "..\\config\\"
+    config_file_path = f"{path_config}{pr['conf_name']}\\"
 
     # 调用 load_assembler_xlsx 函数加载配置文件
-    pr_loaded = load_assembler_xlsx(path_config, pr["conf_name"])
+    # pr_loaded = load_assembler_xlsx(path_config, pr["conf_name"], "timing_table")
+    pr_loaded = load_assembler_xlsx(config_file_path)
 
     # update pr with pr_loaded
     pr.update(pr_loaded)
@@ -50,10 +53,10 @@ def preset_pr():
     # 打印读取到的 Excel 配置文件
     if "T_assembler" in pr:
         print("Loaded Excel configuration:")
-        # print(pr['T_assembler'])
+        print(pr["T_assembler"])
         # data frame
-        cfg_info = pd.DataFrame(pr["T_assembler"])
-        cfg_info.style
+        # cfg_info = pd.DataFrame(pr["T_assembler"])
+        # cfg_info.style
 
     # 返回组合后的参数字典
     return pr
