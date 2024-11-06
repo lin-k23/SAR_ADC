@@ -36,7 +36,9 @@ def preset_pr():
         "channel_mapping5": 5,
         "channel_mapping6": 6,
         # Configuration file name
-        "conf_name": "sar",
+        "conf_name": input(
+            "配置文件名: sar/tisar/nssar1o1c/noisar1o1ccp/pipesar2s/...\n"
+        ),
     }
 
     # 把pr["conf_name"]和path_config拼接起来，得到配置文件的路径

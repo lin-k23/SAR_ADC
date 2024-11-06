@@ -1,7 +1,9 @@
 import numpy as np
 import re
 
-# 2024/10/31 d_out的初始化问题未解决
+# 2024/10/31 d_out initialization bug
+
+# 2024/11/2 fix the bug of d_out
 
 
 def RISCA_core(mdl, pr, v_in_p, v_in_n):
@@ -102,7 +104,8 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
 
     _, n_sim = v_in_p.shape
     # tranfer da.d_out into np.array
-    d_out = np.zeros((int(n_sim / 3) + 1, 16))
+    # d_out = np.zeros((int(n_sim / 3) + 1, 16))
+    d_out_list = []
 
     for iter_sim in range(1, n_sim + 1):
         if mdl["is_verbose"] >= 1:
@@ -135,20 +138,28 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         # d_out.append(addr + [rdym_ch[iter_ch-1], rdyl_ch[iter_ch-1]] +
                         #                   (d_out_ch[iter_ch-1, :] if rdyl_ch[iter_ch-1] == 1 else d_out_ch[iter_ch-1, 0:4].tolist()))
 
-                        d_out[iter_out - 1, 0:3] = addr  # Python 索引从 0 开始
-                        d_out[iter_out - 1, 3:5] = [
-                            rdym_ch[iter_ch - 1],
-                            rdyl_ch[iter_ch - 1],
-                        ]  # rdym 和 rdyl 的赋值
-
+                        d_out_raw = [0] * 16
+                        d_out_raw[0:3] = addr
+                        d_out_raw[3:5] = [rdym_ch[iter_ch - 1], rdyl_ch[iter_ch - 1]]
                         if rdyl_ch[iter_ch - 1] == 1:
-                            d_out[iter_out - 1, 5:16] = d_out_ch[
-                                iter_ch - 1, :
-                            ]  # 赋值 d_out_ch
+                            d_out_raw[5:16] = d_out_ch[iter_ch - 1, :]
                         else:
-                            d_out[iter_out - 1, 11:16] = d_out_ch[
-                                iter_ch - 1, 0:5
-                            ]  # 赋值 d_out_ch 的前 5 个元素
+                            d_out_raw[11:16] = d_out_ch[iter_ch - 1, 0:5]
+                        d_out_list.append(d_out_raw)
+
+                        # d_out[iter_out - 1, 0:3] = addr  # Python 索引从 0 开始
+                        # d_out[iter_out - 1, 3:5] = [
+                        #     rdym_ch[iter_ch - 1],
+                        #     rdyl_ch[iter_ch - 1],
+                        # ]  # rdym 和 rdyl 的赋值
+                        # if rdyl_ch[iter_ch - 1] == 1:
+                        #     d_out[iter_out - 1, 5:16] = d_out_ch[
+                        #         iter_ch - 1, :
+                        #     ]  # 赋值 d_out_ch
+                        # else:
+                        #     d_out[iter_out - 1, 11:16] = d_out_ch[
+                        #         iter_ch - 1, 0:5
+                        #     ]  # 赋值 d_out_ch 的前 5 个元素
 
                         if mdl["is_verbose"] >= 2:
                             print(
@@ -590,4 +601,5 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                                 f"[F][{iter_ch-1}] v_cmaj_p={v_cmaj_p[iter_ch-1]*1e3:.4f} mV, v_cmaj_n={v_cmaj_n[iter_ch-1]*1e3:.4f} mV, delta_cmaj={delta_cmaj*1e3:.4f} mV"
                             )
 
+        d_out = np.array(d_out_list)
     return d_out

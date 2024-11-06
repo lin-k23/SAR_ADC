@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from util.specPlot import specPlot
-from util.dout_parse import dout_parse
 
 
 # class Analyser:
