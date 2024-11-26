@@ -31,7 +31,7 @@ def specPlot(
 
     Nd2 = N // 2
     freq = np.arange(Nd2) / N * Fs
-    win = winType(N)  # 生成窗函数
+    win = winType(N)
 
     spec = np.zeros(N)
     ME = 0
@@ -42,7 +42,6 @@ def specPlot(
             continue
         tdata = tdata / maxCode
         tdata = tdata - np.mean(tdata)
-        # tdata本身无误
         tdata = tdata * win / np.sqrt(np.mean(win**2))
         spec += np.abs(np.fft.fft(tdata)) ** 2
         ME += 1

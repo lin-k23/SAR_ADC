@@ -3,6 +3,7 @@ from preset_pr import preset_pr  # 导入 preset_pr.py 中的函数
 from signal_source import signal_source  # 导入 signal_source.py 中的函数
 from RISCA_core import RISCA_core  # 导入 RISCA_core.py 中的函数
 from analyser.analyser import AnalyserSar  # 导入 AnalyserSar 类
+from analyser.analyser_new import Analyser  # 导入 AnalyserSar 类
 import pandas as pd  # 导入 pandas 库
 import matplotlib.pyplot as plt  # 导入 matplotlib 库
 
@@ -26,9 +27,9 @@ v_in_p, v_in_n = signal_source(pr, mdl, v_in_peak)
 # Instantiate the device under test
 da = RISCA_core(mdl, pr, v_in_p, v_in_n)
 
-# run analysis
-test = AnalyserSar(da, pr)
-test.no_calibration()
+# analysis
+test = Analyser(da, pr)
+test.mode_analyser()
 
 # py should use show while ipynb should not
 plt.show()

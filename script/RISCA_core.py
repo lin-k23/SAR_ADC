@@ -450,10 +450,10 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
 
                         i_amp_p = (
                             v_amp_diff / 2 + v_amp_os[iter_ch - 1 - 1] / 2
-                        ) * mdl.nominal_gm_amp
+                        ) * mdl["nominal_gm_amp"]
                         i_amp_n = (
                             -v_amp_diff / 2 + v_amp_os[iter_ch - 1 - 1] / 2
-                        ) * mdl.nominal_gm_amp
+                        ) * mdl["nominal_gm_amp"]
 
                         if mdl["is_verbose"] >= 2:
                             AMP_input = vres_p - vres_n
@@ -500,11 +500,11 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         # residue feedback path
                         bus_num = int(conf_col[pos_start + 1])
                         if bus_num == 0:
-                            v_fb_p = i_self_p[iter_ch - 1] * mdl.nominal_TIA_gain
-                            v_fb_n = i_self_n[iter_ch - 1] * mdl.nominal_TIA_gain
+                            v_fb_p = i_self_p[iter_ch - 1] * mdl["nominal_TIA_gain"]
+                            v_fb_n = i_self_n[iter_ch - 1] * mdl["nominal_TIA_gain"]
                         else:
-                            v_fb_p = i_bus_p[bus_num] * mdl.nominal_TIA_gain
-                            v_fb_n = i_bus_n[bus_num] * mdl.nominal_TIA_gain
+                            v_fb_p = i_bus_p[bus_num] * mdl["nominal_TIA_gain"]
+                            v_fb_n = i_bus_n[bus_num] * mdl["nominal_TIA_gain"]
 
                         # direction
                         if conf_col[pos_start + 2] == "P":
@@ -517,40 +517,40 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         # residue sampling
                         # output referred noise (including 2-phase)
                         if conf_col[pos_end - 1] == "L":
-                            v_fb_p_noise = (
-                                v_fb_p
-                                + mdl.en_noi_amp
-                                * np.random.randn()
-                                * sgm_vn_amp_lbw[iter_ch - 1]
-                                * mdl.nominal_gm_amp
-                                * mdl.nominal_TIA_gain
-                                / np.sqrt(2)
+                            v_fb_p_noise = v_fb_p + mdl[
+                                "en_noi_amp"
+                            ] * np.random.randn() * sgm_vn_amp_lbw[iter_ch - 1] * mdl[
+                                "nominal_gm_amp"
+                            ] * mdl[
+                                "nominal_TIA_gain"
+                            ] / np.sqrt(
+                                2
                             )
-                            v_fb_n_noise = (
-                                v_fb_n
-                                + mdl.en_noi_amp
-                                * np.random.randn()
-                                * sgm_vn_amp_lbw[iter_ch - 1]
-                                * mdl.nominal_gm_amp
-                                * mdl.nominal_TIA_gain
-                                / np.sqrt(2)
+                            v_fb_n_noise = v_fb_n + mdl[
+                                "en_noi_amp"
+                            ] * np.random.randn() * sgm_vn_amp_lbw[iter_ch - 1] * mdl[
+                                "nominal_gm_amp"
+                            ] * mdl[
+                                "nominal_TIA_gain"
+                            ] / np.sqrt(
+                                2
                             )
                         else:
                             v_fb_p_noise = (
                                 v_fb_p
-                                + mdl.en_noi_amp
+                                + mdl["en_noi_amp"]
                                 * np.random.randn()
                                 * sgm_vn_amp[iter_ch - 1]
-                                * mdl.nominal_gm_amp
-                                * mdl.nominal_TIA_gain
+                                * mdl["nominal_gm_amp"]
+                                * mdl["nominal_TIA_gain"]
                             )
                             v_fb_n_noise = (
                                 v_fb_n
-                                + mdl.en_noi_amp
+                                + mdl["en_noi_amp"]
                                 * np.random.randn()
                                 * sgm_vn_amp[iter_ch - 1]
-                                * mdl.nominal_gm_amp
-                                * mdl.nominal_TIA_gain
+                                * mdl["nominal_gm_amp"]
+                                * mdl["nominal_TIA_gain"]
                             )
 
                         v_fb_p_rec = v_fb_p
@@ -565,10 +565,10 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             Ctot += phy_cap_Cmin2
 
                         v_fb_p_noise += (
-                            mdl.en_noi_cfb * np.random.randn() * np.sqrt(KT / Ctot)
+                            mdl["en_noi_cfb"] * np.random.randn() * np.sqrt(KT / Ctot)
                         )
                         v_fb_n_noise += (
-                            mdl.en_noi_cfb * np.random.randn() * np.sqrt(KT / Ctot)
+                            mdl["en_noi_cfb"] * np.random.randn() * np.sqrt(KT / Ctot)
                         )
 
                         # 根据匹配的字符更新相应的电容值
