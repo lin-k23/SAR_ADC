@@ -28,9 +28,9 @@ v_in_peak = [pr["v_in_peak"], 0]
 v_in_p, v_in_n = signal_source(pr, mdl, v_in_peak)
 
 # Instantiate the device under test
-# da = RISCA_core(mdl, pr, v_in_p, v_in_n)
-da_read = pd.read_csv("da.csv")
-da = da_read.to_numpy()
+da = RISCA_core(mdl, pr, v_in_p, v_in_n)
+# da_read = pd.read_csv("da.csv")
+# da = da_read.to_numpy()
 # analysis
 test = Analyser(da, pr)
 test.mode_analyser()

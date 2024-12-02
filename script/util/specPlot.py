@@ -53,7 +53,6 @@ def specPlot(
     spec = spec / (N**2) * 16 / ME  # 归一化
 
     bin_max = np.argmax(spec)
-    bin_max = 2440
     sig = np.sum(spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin, Nd2)])
     pwr = 10 * np.log10(sig)
 
