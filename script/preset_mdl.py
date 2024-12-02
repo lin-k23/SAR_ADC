@@ -13,7 +13,7 @@ def preset_mdl():
         "v_ref": 0.9,  # Vref
         # SAR weight
         "n_wgt_sar1": [256, 128, 64, 32, 16],
-        "n_wgt_sar2": [16, 8, 4, 2, 1, 0.5],
+        "n_wgt_sar2": [16, 8, 4, 4, 2, 1],
         "cu_cdac": 1e-15,
         # Bridge cap
         "cu_bridge": 10e-15,  # Unit cap size of bridge cap

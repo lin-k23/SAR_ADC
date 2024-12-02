@@ -21,6 +21,9 @@ pr.update(pr_loaded)
 if "T_assembler" in pr:
     print("Loaded Excel configuration:\n")
     print(pr["T_assembler"])
+if pr["conf_name"] == "tisar":
+    mdl["n_wgt_sar1"] = [256, 128, 64, 32, 16]
+    mdl["n_wgt_sar2"] = [16, 8, 4, 2, 1, 0.5]
 
 # 定义输入信号峰值
 v_in_peak = [pr["v_in_peak"], 0]

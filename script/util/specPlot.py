@@ -170,7 +170,7 @@ def specPlotOS(
     maxCode=None,
     harmonic=5,
     OSR=1,
-    winType="hann",
+    winType=np.hanning,
     sideBin=1,
     label=1,
     assumedSignal=None,
@@ -202,12 +202,13 @@ def specPlotOS(
 
     N_run, _ = data.shape
     Nd2 = N_fft // 2
-    freq = np.linspace(0, Fs / 2, Nd2)
-    win = get_window(winType, N_fft, fftbins=True)
+    freq = np.linspace(0, Nd2 - 1, Nd2) / N_fft * Fs
+    win = winType(N_fft)
 
     spec = np.zeros(N_fft)
     ME = 0
-    for tdata in data:
+    for iter in range(N_run):
+        tdata = data[iter - 1, :]
         if np.sqrt(np.mean(tdata**2)) == 0:
             continue
         tdata = tdata / maxCode
@@ -232,11 +233,12 @@ def specPlotOS(
 
     if harmonic < 0:
         for i in range(2, -harmonic + 1):
-            b = (bin_idx * i) % N_fft
+            b = alias((bin - 1) * i, N_fft)
             spec[max(b - sideBin, 0) : min(b + sideBin + 1, Nd2)] = 0
 
+    h = None
     if isPlot:
-        plt.figure()
+        # plt.figure()
         if OSR == 1:
             (h,) = plt.plot(freq, 10 * np.log10(spec))
         else:
@@ -247,18 +249,31 @@ def specPlotOS(
         plt.ylabel("dBFS")
 
         if label:
-            plt.plot(
-                freq[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)],
-                10
-                * np.log10(
-                    spec[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)]
-                ),
-                "r-",
-                linewidth=0.5,
-            )
-            plt.text(freq[bin_idx], pwr, f"Fund = {pwr:.2f} dB", fontsize=10)
-    else:
-        h = None
+            if OSR == 1:
+                plt.plot(
+                    freq[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)],
+                    10
+                    * np.log10(
+                        spec[
+                            max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)
+                        ]
+                    ),
+                    "r-",
+                    linewidth=0.5,
+                )
+            if harmonic > 0:
+                for i in range(2, harmonic + 1):
+                    b = alias((bin_idx - 1) * i, N_fft)
+                    plt.plot(
+                        b / N_fft * Fs, 10 * np.log10(spec[b + 1] + 10 ** (-20)), "rs"
+                    )
+                    plt.text(
+                        b / N_fft * Fs,
+                        10 * np.log10(spec[b + 1] + 10 ** (-20)) + 5,
+                        str(i),
+                        fontsize=12,
+                        ha="center",
+                    )
 
     # Remove signal components for noise calculation
     spec[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)] = 0
@@ -271,7 +286,7 @@ def specPlotOS(
 
     thd = 0
     for i in range(2, N_fft // 100 + 1):
-        b = (bin_idx * i) % N_fft
+        b = alias((bin_idx - 1) * i, N_fft)
         thd += np.sum(spec[max(b - 2, 0) : min(b + 3, Nd2 // OSR)])
         spec[max(b - 2, 0) : min(b + 3, Nd2 // OSR)] = 0
 
@@ -281,9 +296,49 @@ def specPlotOS(
     NF = SNR - pwr
 
     if isPlot:
-        plt.axis([Fs / N_fft, Fs / 2, -150, 0])
-        if OSR > 1:
-            plt.text(Fs / 2, -80, f"OSR = {OSR}")
-        plt.show()
+        # 绘制频谱图的 Y 轴范围
+        plt.axis(
+            [
+                Fs / N_fft,
+                Fs / 2,
+                min(max(-NF - 10 * np.log10(N_fft) - 10, -150), -40),
+                0,
+            ]
+        )
+
+        # 绘制虚线
+        plt.plot(np.array([1, 1]) * Fs / 2 / OSR, [0, -1000], "--")
+
+        if label:
+            # 根据 Fs 的大小选择显示频率单位
+            if Fs > 1e6:
+                plt.text(
+                    Fs / N_fft * 2,
+                    -10,
+                    f"Fin/Fs = {bin_idx / N_fft * Fs / 1e6:.1f} / {Fs / 1e6:.1f} MHz",
+                )
+            else:
+                plt.text(
+                    Fs / N_fft * 2,
+                    -10,
+                    f"Fin/Fs = {bin_idx / N_fft * Fs / 1e3:.1f} / {Fs / 1e3:.1f} KHz",
+                )
+
+            # 显示信号功率
+            plt.text(bin_idx / N_fft * Fs, pwr, f"Fund = {pwr:.2f} dB")
+            # 显示其他性能指标
+            plt.text(Fs / N_fft * 2, -20, f"ENoB = {ENoB:.2f}")
+            plt.text(Fs / N_fft * 2, -30, f"SNDR = {SNDR:.2f} dB")
+            plt.text(Fs / N_fft * 2, -40, f"SFDR = {SFDR:.2f} dB")
+            plt.text(Fs / N_fft * 2, -50, f"THD = {THD:.2f} dB")
+            plt.text(Fs / N_fft * 2, -60, f"SNR = {SNR:.2f} dB")
+            plt.text(Fs / N_fft * 2, -70, f"Noise Floor = {NF:.2f} dB")
+            # 如果 OSR > 1，显示 OSR 的值
+            if OSR > 1:
+                plt.text(Fs / N_fft * 2, -80, f"OSR = {int(OSR)}")
+            # 添加标签
+            plt.xlabel("Freq (Hz)")
+            plt.ylabel("dBFS")
+            plt.title("Output Spectrum")
 
     return ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h
