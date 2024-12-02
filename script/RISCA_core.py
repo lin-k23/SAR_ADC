@@ -323,52 +323,46 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                     if "MSB" in conf_col:
                         for iter_sar in range(n_bit_sar1):
                             # 计算比较器电压
-                            v_cmp[iter_ch - 1 - 1] = (
-                                v_cdac_p[iter_ch - 1 - 1] - v_cdac_n[iter_ch - 1 - 1]
-                            ) + (v_cmaj_p[iter_ch - 1 - 1] - v_cmaj_n[iter_ch - 1 - 1])
+                            v_cmp[iter_ch - 1] = (
+                                v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
+                            ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
                             vn_cmp = (
                                 mdl["en_noi_cmp"]
                                 * np.random.randn()
-                                * sgm_vn_cmp[iter_ch - 1 - 1]
+                                * sgm_vn_cmp[iter_ch - 1]
                             )
 
                             if mdl["is_verbose"] >= 2:
                                 delta_CDAC = (
-                                    v_cdac_p[iter_ch - 1 - 1]
-                                    - v_cdac_n[iter_ch - 1 - 1]
+                                    v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
                                 )
                                 print(
-                                    f"[MSB][{iter_ch-1}][iter_SAR={iter_sar + 1}] v_cdac_p={v_cdac_p[iter_ch-1 - 1] * 1e3:.4f} mV, "
-                                    f"v_cdac_n={v_cdac_n[iter_ch-1 - 1] * 1e3:.4f} mV, delta_CDAC={delta_CDAC * 1e3:.4f} mV, "
-                                    f"Vcmp={v_cmp[iter_ch-1 - 1] * 1e3:.4f} mV"
+                                    f"[MSB][{iter_ch-1}][iter_SAR={iter_sar + 1}] v_cdac_p={v_cdac_p[iter_ch-1] * 1e3:.4f} mV, "
+                                    f"v_cdac_n={v_cdac_n[iter_ch-1] * 1e3:.4f} mV, delta_CDAC={delta_CDAC * 1e3:.4f} mV, "
+                                    f"Vcmp={v_cmp[iter_ch-1] * 1e3:.4f} mV"
                                 )
 
-                            if (
-                                v_cmp[iter_ch - 1 - 1]
-                                + v_cmp_os[iter_ch - 1 - 1]
-                                + vn_cmp
-                                > 0
-                            ):
-                                v_cdac_p[iter_ch - 1 - 1] -= (
+                            if v_cmp[iter_ch - 1] + v_cmp_os[iter_ch - 1] + vn_cmp > 0:
+                                v_cdac_p[iter_ch - 1] -= (
                                     mdl["v_ref"] * a_wgt_sar1[iter_sar] / 2
                                 )
-                                v_cdac_n[iter_ch - 1 - 1] += (
+                                v_cdac_n[iter_ch - 1] += (
                                     mdl["v_ref"] * a_wgt_sar1[iter_sar] / 2
                                 )
-                                d_out_ch[iter_ch - 1 - 1, iter_sar] = 1
+                                d_out_ch[iter_ch - 1, iter_sar] = 1
                             else:
-                                v_cdac_p[iter_ch - 1 - 1] += (
+                                v_cdac_p[iter_ch - 1] += (
                                     mdl["v_ref"] * a_wgt_sar1[iter_sar] / 2
                                 )
-                                v_cdac_n[iter_ch - 1 - 1] -= (
+                                v_cdac_n[iter_ch - 1] -= (
                                     mdl["v_ref"] * a_wgt_sar1[iter_sar] / 2
                                 )
 
-                        rdym_ch[iter_ch - 1 - 1] = 1
+                        rdym_ch[iter_ch - 1] = 1
 
                         if mdl["is_verbose"] >= 2:
                             print(
-                                f"[MSB][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1 - 1] * 1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1 - 1] * 1e3:.4f} mV, Vcmp={v_cmp[iter_ch-1 - 1] * 1e3:.4f} mV"
+                                f"[MSB][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1] * 1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1] * 1e3:.4f} mV, Vcmp={v_cmp[iter_ch-1] * 1e3:.4f} mV"
                             )
                             print(f"[MSB][{iter_ch-1}] digital code =")
                             print(d_out_ch)
@@ -377,52 +371,46 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                     if "LSB" in conf_col:
                         for iter_sar in range(n_bit_sar2):
                             # 计算比较器电压
-                            v_cmp[iter_ch - 1 - 1] = (
-                                v_cdac_p[iter_ch - 1 - 1] - v_cdac_n[iter_ch - 1 - 1]
-                            ) + (v_cmaj_p[iter_ch - 1 - 1] - v_cmaj_n[iter_ch - 1 - 1])
+                            v_cmp[iter_ch - 1] = (
+                                v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
+                            ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
                             vn_cmp = (
                                 mdl["en_noi_cmp"]
                                 * np.random.randn()
-                                * sgm_vn_cmp[iter_ch - 1 - 1]
+                                * sgm_vn_cmp[iter_ch - 1]
                             )
 
                             if mdl["is_verbose"] >= 2:
                                 delta_CDAC = (
-                                    v_cdac_p[iter_ch - 1 - 1]
-                                    - v_cdac_n[iter_ch - 1 - 1]
+                                    v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
                                 )
                                 print(
-                                    f"[LSB][{iter_ch-1}][iter_SAR={iter_sar + 1}] v_cdac_p={v_cdac_p[iter_ch-1 - 1] * 1e3:.4f} mV, "
-                                    f"v_cdac_n={v_cdac_n[iter_ch-1 - 1] * 1e3:.4f} mV, delta_CDAC={delta_CDAC * 1e3:.4f} mV, "
-                                    f"Vcmp={v_cmp[iter_ch-1 - 1] * 1e3:.4f} mV"
+                                    f"[LSB][{iter_ch-1}][iter_SAR={iter_sar + 1}] v_cdac_p={v_cdac_p[iter_ch-1] * 1e3:.4f} mV, "
+                                    f"v_cdac_n={v_cdac_n[iter_ch-1] * 1e3:.4f} mV, delta_CDAC={delta_CDAC * 1e3:.4f} mV, "
+                                    f"Vcmp={v_cmp[iter_ch-1] * 1e3:.4f} mV"
                                 )
 
-                            if (
-                                v_cmp[iter_ch - 1 - 1]
-                                + v_cmp_os[iter_ch - 1 - 1]
-                                + vn_cmp
-                                > 0
-                            ):
-                                d_out_ch[iter_ch - 1 - 1, n_bit_sar1 + iter_sar] = 1
-                                v_cdac_p[iter_ch - 1 - 1] -= (
+                            if v_cmp[iter_ch - 1] + v_cmp_os[iter_ch - 1] + vn_cmp > 0:
+                                d_out_ch[iter_ch - 1, n_bit_sar1 + iter_sar] = 1
+                                v_cdac_p[iter_ch - 1] -= (
                                     mdl["v_ref"] * a_wgt_sar2[iter_sar] / 2
                                 )
-                                v_cdac_n[iter_ch - 1 - 1] += (
+                                v_cdac_n[iter_ch - 1] += (
                                     mdl["v_ref"] * a_wgt_sar2[iter_sar] / 2
                                 )
                             else:
-                                v_cdac_p[iter_ch - 1 - 1] += (
+                                v_cdac_p[iter_ch - 1] += (
                                     mdl["v_ref"] * a_wgt_sar2[iter_sar] / 2
                                 )
-                                v_cdac_n[iter_ch - 1 - 1] -= (
+                                v_cdac_n[iter_ch - 1] -= (
                                     mdl["v_ref"] * a_wgt_sar2[iter_sar] / 2
                                 )
 
-                        rdyl_ch[iter_ch - 1 - 1] = 1
+                        rdyl_ch[iter_ch - 1] = 1
 
                         if mdl["is_verbose"] >= 2:
                             print(
-                                f"[LSB][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1 - 1] * 1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1 - 1] * 1e3:.4f} mV, Vcmp={v_cmp[iter_ch-1 - 1] * 1e3:.4f} mV"
+                                f"[LSB][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1] * 1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1] * 1e3:.4f} mV, Vcmp={v_cmp[iter_ch-1] * 1e3:.4f} mV"
                             )
                             print(f"[LSB][{iter_ch-1}] digital code =")
                             print(d_out_ch)
@@ -435,40 +423,36 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
 
                     if match:
                         # 调整 iter_ch-1 为 Python 下标
-                        v_cmp[iter_ch - 1 - 1] = (
-                            v_cdac_p[iter_ch - 1 - 1] - v_cdac_n[iter_ch - 1 - 1]
-                        ) + (v_cmaj_p[iter_ch - 1 - 1] - v_cmaj_n[iter_ch - 1 - 1])
+                        v_cmp[iter_ch - 1] = (
+                            v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
+                        ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
 
-                        vres_p = v_cdac_p[iter_ch - 1 - 1] + v_cmaj_p[iter_ch - 1 - 1]
-                        vres_n = v_cdac_n[iter_ch - 1 - 1] + v_cmaj_n[iter_ch - 1 - 1]
+                        vres_p = v_cdac_p[iter_ch - 1] + v_cmaj_p[iter_ch - 1]
+                        vres_n = v_cdac_n[iter_ch - 1] + v_cmaj_n[iter_ch - 1]
 
                         v_amp_diff = (
                             8 * (vres_p - vres_n)
-                            + a_nl2_amp[iter_ch - 1 - 1] * (vres_p - vres_n) ** 2
-                            + a_nl3_amp[iter_ch - 1 - 1] * (vres_p - vres_n) ** 3
+                            + a_nl2_amp[iter_ch - 1] * (vres_p - vres_n) ** 2
+                            + a_nl3_amp[iter_ch - 1] * (vres_p - vres_n) ** 3
                         ) / 8
 
-                        i_amp_p = (
-                            v_amp_diff / 2 + v_amp_os[iter_ch - 1 - 1] / 2
-                        ) * mdl["nominal_gm_amp"]
-                        i_amp_n = (
-                            -v_amp_diff / 2 + v_amp_os[iter_ch - 1 - 1] / 2
-                        ) * mdl["nominal_gm_amp"]
+                        i_amp_p = (v_amp_diff / 2 + v_amp_os[iter_ch - 1] / 2) * mdl[
+                            "nominal_gm_amp"
+                        ]
+                        i_amp_n = (-v_amp_diff / 2 + v_amp_os[iter_ch - 1] / 2) * mdl[
+                            "nominal_gm_amp"
+                        ]
 
                         if mdl["is_verbose"] >= 2:
                             AMP_input = vres_p - vres_n
-                            delta_CDAC = (
-                                v_cdac_p[iter_ch - 1 - 1] - v_cdac_n[iter_ch - 1 - 1]
-                            )
-                            delta_CMAJ = (
-                                v_cmaj_p[iter_ch - 1 - 1] - v_cmaj_n[iter_ch - 1 - 1]
-                            )
+                            delta_CDAC = v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
+                            delta_CMAJ = v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1]
 
                             print(
-                                f"[AMP][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1 - 1]*1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1 - 1]*1e3:.4f} mV, delta_CDAC={delta_CDAC*1e3:.4f} mV"
+                                f"[AMP][{iter_ch-1}] v_cdac_p={v_cdac_p[iter_ch-1]*1e3:.4f} mV, v_cdac_n={v_cdac_n[iter_ch-1]*1e3:.4f} mV, delta_CDAC={delta_CDAC*1e3:.4f} mV"
                             )
                             print(
-                                f"[AMP][{iter_ch-1}] v_cmaj_p={v_cmaj_p[iter_ch-1 - 1]*1e3:.4f} mV, v_cmaj_n={v_cmaj_n[iter_ch-1 - 1]*1e3:.4f} mV, delta_CMAJ={delta_CMAJ*1e3:.4f} mV"
+                                f"[AMP][{iter_ch-1}] v_cmaj_p={v_cmaj_p[iter_ch-1]*1e3:.4f} mV, v_cmaj_n={v_cmaj_n[iter_ch-1]*1e3:.4f} mV, delta_CMAJ={delta_CMAJ*1e3:.4f} mV"
                             )
                             print(
                                 f"[AMP][{iter_ch-1}] AMP_input={AMP_input*1e3:.4f} mV, AMP_target={AMP_input*8*1e3:.4f} mV"
@@ -478,16 +462,14 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         if conf_col[match.end() - 1] == "F":
                             i_amp_p, i_amp_n = i_amp_n, i_amp_p
 
+                        ## maybe problematic
                         bus_index = int(conf_col[match.start() + 3])
                         if bus_index == 0:
-                            i_self_p[iter_ch - 1 - 1] = i_amp_p
-                            i_self_n[iter_ch - 1 - 1] = i_amp_n
+                            i_self_p[iter_ch - 1] = i_amp_p
+                            i_self_n[iter_ch - 1] = i_amp_n
                         else:
                             i_bus_p[bus_index] = i_amp_p
                             i_bus_n[bus_index] = i_amp_n
-
-                # 假设相关变量都已定义，包括 conf_col, iter_task, iter_ch-1, i_self_p, i_self_n, i_bus_p, i_bus_n
-                # mdl, phy_cap_Cmaj, phy_cap_Cmin1, phy_cap_Cmin2, sgm_vn_amp, sgm_vn_amp_lbw, KT
 
                 elif iter_task == 6:  # residue feedback sampling (bus RX)
                     reg_pattern = r"F\d[PN]\d+L?"
@@ -553,8 +535,8 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                                 * mdl["nominal_TIA_gain"]
                             )
 
-                        v_fb_p_rec = v_fb_p
-                        v_fb_n_rec = v_fb_n
+                        # v_fb_p_rec = v_fb_p
+                        # v_fb_n_rec = v_fb_n
 
                         Ctot = 0
                         if "0" in conf_col[pos_start + 3 : pos_end]:

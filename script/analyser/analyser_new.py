@@ -113,9 +113,9 @@ class Analyser:
         data3 = np.zeros((pr_N_fft, len(weight3)))
 
         N_out = 3
-        data1[:, :] = digital_code[-pr_N_fft * 3 + 0 :: N_out, :]
-        data2[:, :] = digital_code[-pr_N_fft * 3 + 1 :: N_out, :]
-        data3[:, :] = digital_code[-pr_N_fft * 3 + 2 :: N_out, :]
+        data1[:, :] = digital_code[-pr_N_fft * N_out + 0 : -2 : N_out, :]
+        data2[:, :] = digital_code[-pr_N_fft * N_out + 1 : -1 : N_out, :]
+        data3[:, :] = digital_code[-pr_N_fft * N_out + 2 :: N_out, :]
         #  load weight, gain
         data_cal = np.zeros((pr_N_fft * 3))
         # data1_cal = np.dot(weight1, data1[:].T)
@@ -129,7 +129,11 @@ class Analyser:
         data3_cal = weight3 @ data3[:, :].T
         data3_cal = (data3_cal - np.mean(data3_cal)) / np.std(data3_cal) * std1
 
-        data_comb_run = np.concatenate([data1_cal, data2_cal, data3_cal], axis=0)
+        # data_comb_run = np.concatenate([data1_cal, data2_cal, data3_cal], axis=0)
+        data_comb_run = np.empty((pr_N_fft * 3,))
+        data_comb_run[0::3] = data1_cal
+        data_comb_run[1::3] = data2_cal
+        data_comb_run[2::3] = data3_cal
         data_cal[:] = data_comb_run[: pr_N_fft * 3] + np.sum(weight1) / 2
 
         # Calculate metrics using a Python equivalent of specPlot
