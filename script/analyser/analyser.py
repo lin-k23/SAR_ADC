@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from util.specPlot import specPlot
+from util.specPlot import specPlotOS
 
 
 # class Analyser:

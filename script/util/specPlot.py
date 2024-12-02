@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import get_window
+from scipy.fftpack import fft
 
 
 # alias ok
@@ -51,6 +53,7 @@ def specPlot(
     spec = spec / (N**2) * 16 / ME  # 归一化
 
     bin_max = np.argmax(spec)
+    bin_max = 2440
     sig = np.sum(spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin, Nd2)])
     pwr = 10 * np.log10(sig)
 
@@ -104,7 +107,6 @@ def specPlot(
                     b / N * Fs,
                     10 * np.log10(spec[b + 1] + 10 ** (-20)) + 5,
                     str(i),
-                    fontname="Arial",
                     fontsize=12,
                     ha="center",
                 )
@@ -160,3 +162,129 @@ def specPlot(
             # plt.show()
 
     return ENoB, SNDR, SFDR, SNR, THD, pwr, NF, None if not isPlot else plt.gca()
+
+
+def specPlotOS(
+    data,
+    N_fft=1,
+    Fs=1,
+    maxCode=None,
+    harmonic=5,
+    OSR=1,
+    winType="hann",
+    sideBin=1,
+    label=1,
+    assumedSignal=None,
+    isPlot=1,
+    noFlicker=0,
+):
+    """
+    Compute and optionally plot the output spectrum, signal metrics.
+
+    Parameters:
+    - data: 2D array where rows are individual runs of data.
+    - N_fft: FFT size.
+    - Fs: Sampling frequency.
+    - maxCode: Maximum signal code value (default: max(data) - min(data)).
+    - harmonic: Number of harmonics to remove.
+    - OSR: Oversampling ratio.
+    - winType: Window type, e.g., 'hann'.
+    - sideBin: Number of bins to include around signal peak.
+    - label: Whether to label the plot.
+    - assumedSignal: Assumed signal power (dB).
+    - isPlot: Whether to plot the results.
+    - noFlicker: Remove flicker noise if set to 1.
+
+    Returns:
+    - ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h (plot handle).
+    """
+    if maxCode is None:
+        maxCode = np.max(data) - np.min(data)
+
+    N_run, _ = data.shape
+    Nd2 = N_fft // 2
+    freq = np.linspace(0, Fs / 2, Nd2)
+    win = get_window(winType, N_fft, fftbins=True)
+
+    spec = np.zeros(N_fft)
+    ME = 0
+    for tdata in data:
+        if np.sqrt(np.mean(tdata**2)) == 0:
+            continue
+        tdata = tdata / maxCode
+        tdata = tdata - np.mean(tdata)
+        tdata = tdata * win / np.sqrt(np.mean(win**2))
+        spec += np.abs(fft(tdata)) ** 2
+        ME += 1
+
+    spec = spec[:Nd2]
+    spec[0] = 0
+    spec = spec / (N_fft**2) * 16 / ME
+
+    if noFlicker == 1:
+        spec[: int(N_fft / 1e3)] = 0
+
+    bin_idx = np.argmax(spec[: Nd2 // OSR])
+    sig = np.sum(spec[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)])
+    pwr = 10 * np.log10(sig)
+    if assumedSignal is not None:
+        sig = 10 ** (assumedSignal / 10)
+        pwr = assumedSignal
+
+    if harmonic < 0:
+        for i in range(2, -harmonic + 1):
+            b = (bin_idx * i) % N_fft
+            spec[max(b - sideBin, 0) : min(b + sideBin + 1, Nd2)] = 0
+
+    if isPlot:
+        plt.figure()
+        if OSR == 1:
+            (h,) = plt.plot(freq, 10 * np.log10(spec))
+        else:
+            (h,) = plt.semilogx(freq, 10 * np.log10(spec))
+        plt.grid()
+        plt.title("Output Spectrum")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("dBFS")
+
+        if label:
+            plt.plot(
+                freq[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)],
+                10
+                * np.log10(
+                    spec[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)]
+                ),
+                "r-",
+                linewidth=0.5,
+            )
+            plt.text(freq[bin_idx], pwr, f"Fund = {pwr:.2f} dB", fontsize=10)
+    else:
+        h = None
+
+    # Remove signal components for noise calculation
+    spec[max(bin_idx - sideBin, 0) : min(bin_idx + sideBin + 1, Nd2)] = 0
+    noi = np.sum(spec[: Nd2 // OSR])
+
+    spur = np.max(spec[bin_idx : Nd2 // OSR])
+    SNDR = 10 * np.log10(sig / noi)
+    SFDR = 10 * np.log10(sig / spur)
+    ENoB = (SNDR - 1.76) / 6.02
+
+    thd = 0
+    for i in range(2, N_fft // 100 + 1):
+        b = (bin_idx * i) % N_fft
+        thd += np.sum(spec[max(b - 2, 0) : min(b + 3, Nd2 // OSR)])
+        spec[max(b - 2, 0) : min(b + 3, Nd2 // OSR)] = 0
+
+    noi = np.sum(spec[: Nd2 // OSR])
+    THD = 10 * np.log10(thd / sig)
+    SNR = 10 * np.log10(sig / noi)
+    NF = SNR - pwr
+
+    if isPlot:
+        plt.axis([Fs / N_fft, Fs / 2, -150, 0])
+        if OSR > 1:
+            plt.text(Fs / 2, -80, f"OSR = {OSR}")
+        plt.show()
+
+    return ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h

@@ -49,17 +49,13 @@ def load_assembler_xlsx(path_config):
     else:
         raise FileNotFoundError(f"Config file not found")
 
-    # 加载补丁文件部分的逻辑可以继续扩展
-    # pr["TI"] = 1
+    # load patch
     f_patch = os.path.join(path_config, "patch.xlsx")
 
-    patch_data = pd.read_excel(f_patch)
-    param_name = "TI"
-    if param_name in patch_data["Item"].values:
-        pr["TI"] = patch_data.loc[patch_data["Item"] == param_name, "Value"].values[0]
-        print(f'[{__name__}] TI parameter loaded: pr["TI"]= {pr["TI"]}')
-    else:
-        print(f"[{__name__}] Warning: TI parameter not found in {f_patch}")
-        pr["TI"] = 1
-
+    # patch.xlsx由两列组成，第一列是参数名，第二列是数值
+    if os.path.exists(f_patch):
+        patch_data = pd.read_excel(f_patch)
+        for x in patch_data["Item"].values:
+            pr[x] = patch_data.loc[patch_data["Item"] == x, "Value"].values[0]
+            print(f"[{__name__}] parameter {x} loaded: pr[{x}]= {pr[x]}")
     return pr

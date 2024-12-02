@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from util.specPlot import specPlot
+from util.specPlot import specPlotOS
 
 
 # class Analyser:
@@ -52,6 +53,7 @@ class Analyser:
             "tisar": self._tisar_analyser,
             "nssar1o1c": self._nssar1o1c_analyser,
             "noisar1o1ccp": self._noisar1o1ccp_analyser,
+            "pipesar2s": self._pipesar2s_analyser,
         }
         if self.mode in mode_mappinng:
             return mode_mappinng[self.mode]
@@ -99,9 +101,9 @@ class Analyser:
         Analyser for TISAR ADC
         """
         #  weight
-        weight1 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
-        weight2 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
-        weight3 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
+        weight1 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
+        weight2 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
+        weight3 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
         # data parse and alignment
         _, _, digital_code = self.dout_parse()
         # N_run = 1
@@ -137,7 +139,7 @@ class Analyser:
 
         #  power compensation and FOM
         da_Power = 1e-3
-        OSR = 2  # Replace with your actual OSR value
+        OSR = 1  # Replace with your actual OSR values
         BW = self.pr["F_s"] / 2 / OSR
         FoMs = SNDR + 10 * np.log10(self.pr["F_s"] / 2 / da_Power)
         FoMw = (da_Power) / (self.pr["F_s"] / (2**ENoB)) * 1e15
@@ -168,8 +170,8 @@ class Analyser:
         plt.ylabel("Amplitude")
 
         plt.subplot(1, 2, 2)
-        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
-            aout.reshape(1, -1).T, self.pr["F_s"], np.sum(weight_nom)
+        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlotOS(
+            aout.reshape(1, -1).T, self.pr["F_s"], np.sum(weight_nom), 5, "OSR", OSR
         )
         self.plot_triangle(1, 8e6, -100, 3)
 
@@ -177,4 +179,38 @@ class Analyser:
         """
         Analyser for NOISAR1O1CCP ADC
         """
+        addr, ok, digital_code = self.dout_parse()
+        weight_nom = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
+        OSR = 32
+
+        data_rec_1 = digital_code[1 + 10 : self.pr["N_fft"] + 10 : 2, :]
+        data_rec_2 = digital_code[2 + 10 : self.pr["N_fft"] + 10 : 2, :]
+
+        # 初始化 data_nocal
+        data_nocal = np.zeros((self.pr["N_run"], self.pr["N_fft"]))
+
+        # 计算 data_nocal
+        for i_run in range(self.pr["N_run"]):
+            aout1 = np.dot(weight_nom, data_rec_1[:, :, i_run].T)
+            aout2 = np.dot(weight_nom, data_rec_2[:, :, i_run].T)
+            data_comb = np.concatenate([aout1, np.sum(weight_nom) - aout2])
+            # 转置并添加偏置
+            data_nocal[i_run, :] = data_comb + np.sum(weight_nom) / 2
+        # 可视化部分
+        is_report = 0  # 示例值
+        if not "is_report" in locals() or is_report == 0:
+            # 创建绘图窗口
+            fig = plt.figure(figsize=(15, 8))
+            ax1 = fig.add_subplot(1, 2, 1)
+        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlotOS(
+            data_nocal.reshape(1, -1).T,
+            self.pr["N_fft"],
+            self.pr["F_s"],
+            np.sum(weight_nom),
+            5,
+            "OSR",
+            OSR,
+        )
+
+    def _pipesar2s_analyser(self):
         pass
