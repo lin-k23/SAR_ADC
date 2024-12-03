@@ -204,6 +204,115 @@ class Analyser:
         )
 
     def _pipesar2s_analyser(self):
-        _, _, digital_code = self.dout_parse()
-        data = digital_code[-self.pr["N_fft"] :, :]
-        pass
+        addr, _, digital_code = self.dout_parse()
+        digital_code = digital_code[-self.pr["N_fft"] :, :]
+
+        ## para in csv
+        weight_nom_1 = np.array([256, 128, 64, 32, 16, 0, 0, 0, 0, 0, 0])
+        weight_nom_2 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
+        out_sequence = np.array([1, 2])
+        shift_sequence = np.array([0, 1])
+        kb_include = np.array([1])
+        seg_check = np.array([[1, 0], [0, 1], [8, 1]])
+        weight_nom = np.array([weight_nom_1, weight_nom_2])
+        n_stage = 2
+        n_bits = 11
+        n_seg_check = 3
+        n_stage2 = 2
+        n_stage_bits = np.array([np.sum(weight_nom_1), np.sum(weight_nom_2)])
+        n_out = 2
+
+        ## alignment
+        data_comb = np.zeros([self.pr["N_fft"], np.sum(n_stage_bits)])
+        data_comb_kb = np.zeros(
+            [
+                self.pr["N_fft"],
+                np.sum(n_stage_bits) + np.sum(n_stage_bits[kb_include - 1]),
+            ]
+        )
+        st = 2
+        ed = n_out * self.pr["N_fft"] + st - 1
+        shift = 0
+        for i1 in range(n_out):
+            if addr[st - 1] == self.pr["channel_mapping" + str(i1)]:
+                shift = n_out + 2 - (out_sequence.tolist().index(i1))
+            tmp = []
+            tmp2 = []
+            data = np.zeros([self.pr["N_fft"], n_bits])
+            for i2 in range(n_stage):
+                data[:, :] = digital_code[
+                    st
+                    + shift
+                    + shift_sequence[i2] : ed
+                    + 1
+                    + shift
+                    + shift_sequence[i2],
+                    :n_out,
+                    :,
+                ]
+                tmp.append(data[:, -int(n_stage_bits[i2]) :])
+            tmp2 = tmp
+            for i3 in range(len(kb_include)):
+                data_d = digital_code[
+                    st
+                    + shift
+                    + shift_sequence[kb_include[i3]]
+                    - 1
+                    - n_out : ed
+                    + shift
+                    + shift_sequence[kb_include[i3]]
+                    - n_out,
+                    :n_out,
+                    :,
+                ]
+                tmp2.append(data_d[:, -n_stage_bits[kb_include[i3]] :])
+
+                data_comb[:, :] = tmp
+                data_comb_kb[:, :] = tmp2
+
+        ## calibration
+        n_pts_plot = self.pr["N_fft"] // 64
+        plt.figure(figsize=(15, 6))
+
+        for i1 in range(n_seg_check):
+            weight_seg = []
+            for i2 in range(n_stage):
+                weight_seg.append(seg_check[i1, i2] * weight_nom[i2, :])
+            weight_seg = np.array(weight_seg)
+
+            seg_index = seg_check[i1, :]
+
+            p_first_nonzero = 0
+            p_last_nonzero = 0
+
+            for ix in range(n_stage2):
+                if seg_index[ix] > 0:
+                    p_first_nonzero = ix
+                    break
+
+            for ix in range(n_stage2 - 1, 0, -1):
+                if seg_index[ix] > 0:
+                    p_last_nonzero = ix
+                    break
+
+            st = 0
+            ed = 0
+            for ix in range(p_first_nonzero - 1):
+                st += n_stage_bits[ix]
+            st += 1
+            for ix in range(p_last_nonzero):
+                ed += n_stage_bits[ix]
+
+            data_seg = data_comb[:, st:ed]
+            aout_seg = weight_seg @ data_seg.T
+
+            plt.plot(aout_seg[:n_pts_plot])
+            plt.ylim([0, np.sum(weight_seg)])
+            plt.xlim([0, n_pts_plot])
+
+            seg_check_str = f"seg check: [{', '.join(map(str, seg_check[i1, :]))}]"
+            plt.title(seg_check_str)
+            plt.subplot(2, n_seg_check, n_seg_check + i1)
+            ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
+                aout_seg, self.pr["F_s"], np.sum(weight_seg)
+            )
