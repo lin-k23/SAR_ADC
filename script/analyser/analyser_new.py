@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from util.specPlot import specPlot
 from util.specPlot import specPlotOS
+from PIL import Image
 
 
 # class Analyser:
@@ -10,10 +11,11 @@ class Analyser:
     Analyser class
     """
 
-    def __init__(self, da, pr):
+    def __init__(self, da, pr, mdl):
         self.mode = pr["conf_name"]
         self.da = da
         self.pr = pr
+        self.mdl = mdl
         self.mode_analyser = self._get_mode_analyser()
 
     def dout_parse(self):
@@ -54,6 +56,7 @@ class Analyser:
             "nssar1o1c": self._nssar1o1c_analyser,
             "nssar1o1ccp": self._noisar1o1ccp_analyser,
             "pipesar2s": self._pipesar2s_analyser,
+            "pipesar3shp": self._pipesar3shp_analyser,
         }
         if self.mode in mode_mappinng:
             return mode_mappinng[self.mode]
@@ -64,23 +67,28 @@ class Analyser:
         """
         Analyser for SAR ADC
         """
-        self.weight_nom = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
+        self.weight_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
 
-        n_pts_plot = 1024
+        n_pts_plot = 16
         _, _, da_1 = self.dout_parse()
-        da = da_1[-self.pr["N_fft"] :, :]
+        da = da_1[-self.pr["N_fft"] - 2 : -2, :]
         data_nocal = self.weight_nom @ da[:, :].T
 
         # Plot da without calibration
-        plt.figure(figsize=(15, 8))
+        plt.figure(figsize=(18, 5))
 
-        plt.subplot(2, 1, 1)
-        plt.plot(data_nocal[:n_pts_plot], "-")
+        plt.subplot(1, 3, 1)
+        img = Image.open("..\pic\\nssar1o1c.png")
+        plt.imshow(img)
+        plt.axis("off")
+
+        plt.subplot(1, 3, 2)
+        plt.plot(data_nocal[:n_pts_plot], "-o")
         plt.ylim([0, np.sum(self.weight_nom)])
         plt.xlim([0, n_pts_plot])
         plt.title("No Calibration")
 
-        plt.subplot(2, 1, 2)
+        plt.subplot(1, 3, 3)
         _, _, _, _, _, _, _, _ = specPlot(
             data_nocal.reshape(1, -1).T, self.pr["F_s"], np.sum(self.weight_nom)
         )
@@ -92,9 +100,9 @@ class Analyser:
         Analyser for TISAR ADC
         """
         #  weight
-        weight1 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
-        weight2 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
-        weight3 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
+        weight1 = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
+        weight2 = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
+        weight3 = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
         # data parse and alignment
         _, _, digital_code = self.dout_parse()
         # N_run = 1
@@ -127,6 +135,19 @@ class Analyser:
         data_comb_run[2::3] = data3_cal
         data_cal[:] = data_comb_run[: pr_N_fft * 3] + np.sum(weight1) / 2
 
+        # Plot da without calibration
+        plt.figure(figsize=(18, 5))
+        plt.subplot(1, 3, 1)
+        img = Image.open("..\pic\\tisar.png")
+        plt.imshow(img)
+        plt.axis("off")
+        plt.subplot(1, 3, 2)
+        n_pts_plot = pr_N_fft // 1
+        plt.plot(data_cal[:n_pts_plot])
+        plt.ylim([0, np.sum(weight1)])
+        plt.xlim([0, n_pts_plot])
+        plt.title("No Calibration")
+        plt.subplot(1, 3, 3)
         # Calculate metrics using a Python equivalent of specPlot
         ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
             data_cal.reshape(1, -1).T, self.pr["F_s"], np.sum(weight1)
@@ -137,19 +158,25 @@ class Analyser:
         Analyser for NSSAR1O1C ADC
         """
         _, _, digital_code = self.dout_parse()
-        weight_nom = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
+        weight_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
         OSR = 32
         data = digital_code[-self.pr["N_fft"] :, :]
         aout = weight_nom @ data.T
-        plt.figure(figsize=(15, 6))
 
-        plt.subplot(1, 2, 1)
+        plt.figure(figsize=(18, 5))
+
+        plt.subplot(1, 3, 1)
+        img = Image.open("..\pic\\nssar1o1c.png")
+        plt.imshow(img)
+        plt.axis("off")
+
+        plt.subplot(1, 3, 2)
         n_pts_plot = self.pr["N_fft"] // 1
         plt.plot(aout[:n_pts_plot])
         plt.ylim([0, np.sum(weight_nom)])
         plt.xlim([0, n_pts_plot])
 
-        plt.subplot(1, 2, 2)
+        plt.subplot(1, 3, 3)
         _, _, _, _, _, _, _, _ = specPlotOS(
             aout.reshape(1, -1),
             self.pr["N_fft"],
@@ -165,7 +192,7 @@ class Analyser:
         Analyser for NOISAR1O1CCP ADC
         """
         _, _, digital_code = self.dout_parse()
-        weight_nom = np.array([256, 128, 64, 32, 16, 16, 8, 4, 4, 2, 1])
+        weight_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
         OSR = 32
 
         data_rec_1 = digital_code[10 : self.pr["N_fft"] + 10 : 2, :]
@@ -182,9 +209,14 @@ class Analyser:
         data_comb[1::2] = np.sum(weight_nom) - aout2
         data_nocal[:] = data_comb + np.sum(weight_nom) / 2
 
-        plt.figure(figsize=(15, 6))
+        plt.figure(figsize=(18, 5))
 
-        plt.subplot(1, 2, 1)
+        plt.subplot(1, 3, 1)
+        img = Image.open("../pic/nssar1o1ccp.png")
+        plt.imshow(img)
+        plt.axis("off")
+
+        plt.subplot(1, 3, 2)
         n_pts_plot = self.pr["N_fft"] // 1
         data_comb1[0::2] = aout1
         data_comb1[1::2] = aout2
@@ -192,7 +224,7 @@ class Analyser:
         plt.ylim([0, np.sum(weight_nom)])
         plt.xlim([0, n_pts_plot])
         # 创建绘图窗口
-        plt.subplot(1, 2, 2)
+        plt.subplot(1, 3, 3)
         plt.title("No Calibration")
         _, _, _, _, _, _, _, _ = specPlotOS(
             data_nocal.reshape(1, -1),
@@ -207,16 +239,16 @@ class Analyser:
         addr, _, digital_code = self.dout_parse()
         digital_code = digital_code[-self.pr["N_fft"] :, :]
 
-        ## para in csv
-        weight_nom_1 = np.array([256, 128, 64, 32, 16, 0, 0, 0, 0, 0, 0])
-        weight_nom_2 = np.array([256, 128, 64, 32, 16, 16, 8, 4, 2, 1, 0.5])
+        ## para
+        weight_nom_1 = np.array(self.mdl["n_wgt_sar1"] + [0, 0, 0, 0, 0, 0])
+        weight_nom_2 = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
         out_sequence = np.array([1, 2])
         shift_sequence = np.array([0, 1])
         kb_include = np.array([1])
         seg_check = np.array([[1, 0], [0, 1], [8, 1]])
         weight_nom = np.array([weight_nom_1, weight_nom_2])
         n_stage = 2
-        n_bits = 11
+        n_bits = len(weight_nom_1) + len(weight_nom_2)
         n_seg_check = 3
         n_stage2 = 2
         n_stage_bits = np.array([len(weight_nom_1), len(weight_nom_2)])
@@ -235,10 +267,9 @@ class Analyser:
         shift = 0
         for i1 in range(n_out):
             if addr[st - 1] == self.pr["channel_mapping" + str(i1 + 1)]:
-                shift = n_out - (out_sequence.tolist().index(i1 + 1))
+                shift = n_out - (np.where(out_sequence == i1 + 1)[0][0] + 1)
             tmp = []
             tmp2 = []
-            # data = np.zeros([self.pr["N_fft"], n_bits])
             for i2 in range(n_stage):
                 data = digital_code[
                     st
@@ -265,8 +296,8 @@ class Analyser:
                 ]
                 tmp2.append(data_d[:, -n_stage_bits[kb_include[i3]] :])
 
-                data_comb[:, :] = tmp
-                data_comb_kb[:, :] = tmp2
+            data_comb[:, :] = np.hstack(tmp)
+            data_comb_kb[:, :] = np.hstack(tmp2)
 
         ## calibration
         n_pts_plot = self.pr["N_fft"] // 64
@@ -295,22 +326,27 @@ class Analyser:
 
             st = 0
             ed = 0
-            for ix in range(p_first_nonzero - 1):
+            for ix in range(p_first_nonzero):
                 st += n_stage_bits[ix]
             st += 1
-            for ix in range(p_last_nonzero):
+            for ix in range(p_last_nonzero + 1):
                 ed += n_stage_bits[ix]
 
-            data_seg = data_comb[:, st:ed]
+            data_seg = data_comb[:, st - 1 : ed]
             aout_seg = weight_seg @ data_seg.T
 
+            plt.subplot(2, n_seg_check, i1 + 1)
             plt.plot(aout_seg[:n_pts_plot])
             plt.ylim([0, np.sum(weight_seg)])
             plt.xlim([0, n_pts_plot])
 
             seg_check_str = f"seg check: [{', '.join(map(str, seg_check[i1, :]))}]"
             plt.title(seg_check_str)
-            plt.subplot(2, n_seg_check, n_seg_check + i1)
+            plt.subplot(2, n_seg_check, n_seg_check + i1 + 1)
             ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
                 aout_seg, self.pr["F_s"], np.sum(weight_seg)
             )
+
+    def _pipesar3shp_analyser(self):
+
+        pass

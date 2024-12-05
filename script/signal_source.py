@@ -13,6 +13,8 @@ def signal_source(pr, mdl):
 
     # Determine input frequency bins
     pr["n_in_bin_1"] = find_bin(pr["F_s"], pr["F_in_center_1"], pr["N_fft"])
+    # pr["n_in_bin_1"] = 17
+
     pr["n_in_bin_2"] = find_bin(pr["F_s"], pr["F_in_center_2"], pr["N_fft"])
 
     # Calculate input frequencies

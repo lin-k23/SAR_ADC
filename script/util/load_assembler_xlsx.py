@@ -17,7 +17,8 @@ def load_assembler_xlsx(path_config):
 
     # 拼接 Excel 文件路径
     f_assembler = os.path.join(path_config, "timing_table.xlsx")
-
+    conf_table = os.path.join(path_config, "timing_table_1.xlsx")
+    pr["conf_table"] = pd.read_excel(conf_table, index_col=0)
     print(f"Loading file: {f_assembler}")
 
     # 检查文件是否存在

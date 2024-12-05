@@ -104,7 +104,7 @@ def RISCA_core(mdl, pr, sig):
     for iter_sim in range(1, n_sim + 1):
         if mdl["is_verbose"] >= 1:
             print(f"\niter_sim={iter_sim}")
-
+        # print(f"\niter_sim={iter_sim}")
         iter_frame = (iter_frame % pr["task_frame"]) + 1
 
         N_TASK = 8  # looping of N_TASK is for priority
@@ -366,6 +366,7 @@ def RISCA_core(mdl, pr, sig):
                                 )
 
                             if v_cmp[iter_ch - 1] + v_cmp_os[iter_ch - 1] + vn_cmp > 0:
+                                # d_out_ch[iter_ch - 1, n_bit_sar1 + iter_sar] = 1
                                 d_out_ch[iter_ch - 1, n_bit_sar1 + iter_sar] = 1
                                 v_cdac_p[iter_ch - 1] -= (
                                     mdl["v_ref"] * a_wgt_sar2[iter_sar] / 2

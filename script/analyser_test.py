@@ -15,7 +15,7 @@ mdl = preset_mdl()
 # 调用函数获取测试参数
 pr = preset_pr()
 # pr["conf_name"] = input("sar/tisar/pipesar2s/nssar1o1c/nssar1o1ccp\n")
-pr["conf_name"] = "pipesar2s"
+pr["conf_name"] = "sar"
 config_file_path = os.path.join("../config", pr["conf_name"])
 print(config_file_path)
 pr_loaded = load_assembler_xlsx(config_file_path)
@@ -24,17 +24,14 @@ pr.update(pr_loaded)
 if "T_assembler" in pr:
     print("Loaded Excel configuration:\n")
     print(pr["T_assembler"])
-
-# 定义输入信号峰值
-v_in_peak = [pr["v_in_peak"], 0]
 # 调用 signal_source 函数
 v_in_p, v_in_n = signal_source(pr, mdl)
 
-da = pd.read_csv("da1o1c.csv")
+da = pd.read_csv("mdasar.csv", header=None)
 da = np.array(da)
 
 # analysis
-test = Analyser(da, pr)
+test = Analyser(da, pr, mdl)
 test.mode_analyser()
 
 plt.show()

@@ -1,6 +1,6 @@
 def preset_mdl():
     mdl = {
-        "is_verbose": 1,  # Verbose level
+        "is_verbose": 3,  # Verbose level
         # Architectural parameters
         "n_cb": 6,  # Conversion block number
         "n_in_bus": 2,  # Input bus number
@@ -13,8 +13,8 @@ def preset_mdl():
         "v_ref": 0.9,  # Vref
         # SAR weight
         "n_wgt_sar1": [256, 128, 64, 32, 16],
-        "n_wgt_sar2": [16, 8, 4, 4, 2, 1],
-        "cu_cdac": 1e-15,
+        "n_wgt_sar2": [8, 4, 2, 1, 0.5, 0.25],
+        "cu_cdac": 2e-15,
         # Bridge cap
         "cu_bridge": 10e-15,  # Unit cap size of bridge cap
         "n_cu_Cmin1": 5,
@@ -39,12 +39,18 @@ def preset_mdl():
         # Non-ideality
         "is_nonideal": 1,
         "is_verbose": 0,
-        "en_noi_cdac": 1 * 1,  # Noise of CDAC sampling
-        "en_noi_cmp": 1 * 1,  # Noise of comparator
-        "en_noi_amp": 1 * 1,  # Noise of gm cell
-        "en_noi_cfb": 1 * 1,  # Noise of feedback caps (cmin and cmaj)
-        "en_os_cmp": 1 * 1,  # Offset of comparator
-        "en_os_amp": 1 * 1,  # Offset of gm cell
-        "en_chs_error": 1 * 1,  # Bridge cap parasitics
     }
+
+    mdl.update(
+        {
+            "en_noi_cdac": 1 * mdl["is_nonideal"],  # Noise of CDAC sampling
+            "en_noi_cmp": 1 * mdl["is_nonideal"],  # Noise of comparator
+            "en_noi_amp": 1 * mdl["is_nonideal"],  # Noise of gm cell
+            "en_noi_cfb": 1
+            * mdl["is_nonideal"],  # Noise of feedback caps (cmin and cmaj)
+            "en_os_cmp": 1 * mdl["is_nonideal"],  # Offset of comparator
+            "en_os_amp": 1 * mdl["is_nonideal"],  # Offset of gm cell
+            "en_chs_error": 1 * mdl["is_nonideal"],  # Bridge cap parasitics
+        }
+    )
     return mdl

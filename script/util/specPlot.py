@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import get_window
 from scipy.fftpack import fft
 
 
@@ -34,7 +33,7 @@ def specPlot(
     Nd2 = N // 2
     freq = np.arange(Nd2) / N * Fs
     win = winType(N)
-
+    win = 1
     spec = np.zeros(N)
     ME = 0
 
@@ -53,7 +52,7 @@ def specPlot(
     spec = spec / (N**2) * 16 / ME  # 归一化
 
     bin_max = np.argmax(spec)
-    sig = np.sum(spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin, Nd2)])
+    sig = np.sum(spec[max(bin_max - sideBin, 0) : min(bin_max + sideBin + 2, Nd2 + 1)])
     pwr = 10 * np.log10(sig)
 
     if not np.isnan(assumedSignal):
@@ -101,10 +100,10 @@ def specPlot(
         if harmonic > 0:
             for i in range(2, harmonic + 1):
                 b = alias((bin_max) * i, N)
-                plt.plot(b / N * Fs, 10 * np.log10(spec[b + 1] + 10 ** (-20)), "rs")
+                plt.plot(b / N * Fs, 10 * np.log10(spec[b] + 10 ** (-20)), "rs")
                 plt.text(
                     b / N * Fs,
-                    10 * np.log10(spec[b + 1] + 10 ** (-20)) + 5,
+                    10 * np.log10(spec[b] + 10 ** (-20)) + 5,
                     str(i),
                     fontsize=12,
                     ha="center",
@@ -200,14 +199,14 @@ def specPlotOS(
     if maxCode is None:
         maxCode = np.max(data) - np.min(data)
 
-    N_run, _ = data.shape
+    M, _ = data.shape
     Nd2 = N_fft // 2
     freq = np.linspace(0, Nd2 - 1, Nd2) / N_fft * Fs
     win = winType(N_fft)
 
     spec = np.zeros(N_fft)
     ME = 0
-    for iter in range(N_run):
+    for iter in range(M):
         tdata = data[iter - 1, :]
         if np.sqrt(np.mean(tdata**2)) == 0:
             continue
