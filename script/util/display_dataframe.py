@@ -8,6 +8,8 @@ def display_dataframe(cfg_info, type):
             [
                 {
                     "selector": "thead th",
+                    "display": "table-cell",
+                    "width": "150px",
                     "props": [
                         ("background-color", "#1E3A8A"),  # 深蓝色背景
                         ("color", "white"),
