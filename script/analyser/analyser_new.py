@@ -77,10 +77,10 @@ class Analyser:
         # Plot da without calibration
         plt.figure(figsize=(18, 5))
 
-        plt.subplot(1, 3, 1)
-        img = Image.open("..\pic\\nssar1o1c.png")
-        plt.imshow(img)
-        plt.axis("off")
+        # plt.subplot(1, 3, 1)
+        # img = Image.open("..\pic\\nssar1o1c.png")
+        # plt.imshow(img)
+        # plt.axis("off")
 
         plt.subplot(1, 3, 2)
         plt.plot(data_nocal[:n_pts_plot], "-o")
