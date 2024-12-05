@@ -3,9 +3,10 @@ from util.findBin import find_bin
 import matplotlib.pyplot as plt
 
 
-def signal_source(pr, mdl, v_in_peak):
+def signal_source(pr, mdl):
     # Calculate sampling frequency
     # mdl['is_verbose'] = 1
+    v_in_peak = [pr["v_in_peak"], 0]
     pr["F_s"] = (
         pr["F_clk"] / pr["task_frame"] * pr["TI"]
     )  # Sampling frequency for each input
@@ -38,7 +39,7 @@ def signal_source(pr, mdl, v_in_peak):
             -v_in_peak[iter_in] / 2 * np.cos(pr["F_in"][iter_in] * t_sim * 2 * np.pi)
         )
 
-    # 可视化输入信号
+    # Plot input signals
     if mdl["is_verbose"] == 1:
         plt.figure()
         plt.subplot(2, 1, 1)

@@ -1,13 +1,11 @@
 import numpy as np
 import re
 
-# 2024/10/31 d_out initialization bug
 
-# 2024/11/2 fix the bug of d_out
-
-
-def RISCA_core(mdl, pr, v_in_p, v_in_n):
+def RISCA_core(mdl, pr, sig):
     # -------------------------- setup ----------------------------------------
+    v_in_p = sig[0]
+    v_in_n = sig[1]
     task_ch = pr["task_ch"]
     task_conf = pr["T_assembler"][:task_ch]
 
@@ -26,7 +24,7 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
         * mdl["cu_bridge"]
         * (1 + mdl["par_cbridge_top"] * mdl["en_chs_error"])
         + mdl["par_cmp"] * mdl["en_chs_error"]
-    )  # C-major
+    )
     phy_cap_Cmin1 = (
         mdl["n_cu_Cmin1"]
         * mdl["cu_bridge"]
@@ -96,15 +94,11 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
     rdym_ch = np.zeros(task_ch)
     rdyl_ch = np.zeros(task_ch)
 
-    # da = {'d_out': []}
-
     # ------------------------- run simulation -------------------------------
     iter_out = 0
     iter_frame = 0
 
     _, n_sim = v_in_p.shape
-    # tranfer da.d_out into np.array
-    # d_out = np.zeros((int(n_sim / 3) + 1, 16))
     d_out_list = []
 
     for iter_sim in range(1, n_sim + 1):
@@ -116,9 +110,7 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
         N_TASK = 8  # looping of N_TASK is for priority
         for iter_task in range(1, N_TASK + 1):
             for iter_ch in range(1, pr["task_ch"] + 1):
-                conf_col = task_conf.iloc[
-                    iter_ch - 1, iter_frame - 1
-                ]  # 使用 iloc 进行行列访问
+                conf_col = task_conf.iloc[iter_ch - 1, iter_frame - 1]
 
                 if conf_col is None:
                     continue
@@ -135,9 +127,6 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         addr[1] = (iter_ch - addr[0] * 4) // 2
                         addr[2] = iter_ch - addr[0] * 4 - addr[1] * 2
 
-                        # d_out.append(addr + [rdym_ch[iter_ch-1], rdyl_ch[iter_ch-1]] +
-                        #                   (d_out_ch[iter_ch-1, :] if rdyl_ch[iter_ch-1] == 1 else d_out_ch[iter_ch-1, 0:4].tolist()))
-
                         d_out_raw = [0] * 16
                         d_out_raw[0:3] = addr
                         d_out_raw[3:5] = [rdym_ch[iter_ch - 1], rdyl_ch[iter_ch - 1]]
@@ -146,20 +135,6 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         else:
                             d_out_raw[11:16] = d_out_ch[iter_ch - 1, 0:5]
                         d_out_list.append(d_out_raw)
-
-                        # d_out[iter_out - 1, 0:3] = addr  # Python 索引从 0 开始
-                        # d_out[iter_out - 1, 3:5] = [
-                        #     rdym_ch[iter_ch - 1],
-                        #     rdyl_ch[iter_ch - 1],
-                        # ]  # rdym 和 rdyl 的赋值
-                        # if rdyl_ch[iter_ch - 1] == 1:
-                        #     d_out[iter_out - 1, 5:16] = d_out_ch[
-                        #         iter_ch - 1, :
-                        #     ]  # 赋值 d_out_ch
-                        # else:
-                        #     d_out[iter_out - 1, 11:16] = d_out_ch[
-                        #         iter_ch - 1, 0:5
-                        #     ]  # 赋值 d_out_ch 的前 5 个元素
 
                         if mdl["is_verbose"] >= 2:
                             print(
@@ -292,14 +267,14 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             v_cdac_p[iter_ch - 1] = v_in_p[0, iter_sim - 1]
                             v_cdac_n[iter_ch - 1] = v_in_n[0, iter_sim - 1]
 
-                        # 翻转输入用于 chopping
+                        # flip chopping
                         if conf_col[pos_end - 1] == "F":
                             v_cdac_p[iter_ch - 1], v_cdac_n[iter_ch - 1] = (
                                 v_cdac_n[iter_ch - 1],
                                 v_cdac_p[iter_ch - 1],
                             )
 
-                        # 添加噪声
+                        # add noise
                         noise_factor = (
                             mdl["en_noi_cdac"]
                             * np.random.randn()
@@ -308,7 +283,7 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                         v_cdac_p[iter_ch - 1] += noise_factor
                         v_cdac_n[iter_ch - 1] += noise_factor
 
-                        # 输出详细信息（如果is_verbose大于1）
+                        # debug info
                         if mdl["is_verbose"] > 1:
                             delta_vcdac = (
                                 v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
@@ -319,10 +294,10 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             )
 
                 elif iter_task == 4:  # conversion---------------------------------
-                    # MSB 处理部分
+                    # MSB
                     if "MSB" in conf_col:
                         for iter_sar in range(n_bit_sar1):
-                            # 计算比较器电压
+                            # calculate comparator voltage
                             v_cmp[iter_ch - 1] = (
                                 v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
                             ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
@@ -367,10 +342,10 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             print(f"[MSB][{iter_ch-1}] digital code =")
                             print(d_out_ch)
 
-                    # LSB 处理部分
+                    # LSB
                     if "LSB" in conf_col:
                         for iter_sar in range(n_bit_sar2):
-                            # 计算比较器电压
+                            # calculate comparator voltage
                             v_cmp[iter_ch - 1] = (
                                 v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
                             ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
@@ -422,7 +397,6 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                     match = re.search(reg_pattern, conf_col)
 
                     if match:
-                        # 调整 iter_ch-1 为 Python 下标
                         v_cmp[iter_ch - 1] = (
                             v_cdac_p[iter_ch - 1] - v_cdac_n[iter_ch - 1]
                         ) + (v_cmaj_p[iter_ch - 1] - v_cmaj_n[iter_ch - 1])
@@ -496,7 +470,6 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             v_fb_p = v_fb_p * -1
                             v_fb_n = v_fb_n * -1
 
-                        # residue sampling
                         # output referred noise (including 2-phase)
                         if conf_col[pos_end - 1] == "L":
                             v_fb_p_noise = v_fb_p + mdl[
@@ -535,9 +508,6 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                                 * mdl["nominal_TIA_gain"]
                             )
 
-                        # v_fb_p_rec = v_fb_p
-                        # v_fb_n_rec = v_fb_n
-
                         Ctot = 0
                         if "0" in conf_col[pos_start + 3 : pos_end]:
                             Ctot += phy_cap_Cmaj
@@ -553,7 +523,7 @@ def RISCA_core(mdl, pr, v_in_p, v_in_n):
                             mdl["en_noi_cfb"] * np.random.randn() * np.sqrt(KT / Ctot)
                         )
 
-                        # 根据匹配的字符更新相应的电容值
+                        # update cap value
                         if "0" in conf_col[pos_start + 3 : pos_end]:
                             v_cmaj_p[iter_ch - 1] = v_fb_p_noise
                             v_cmaj_n[iter_ch - 1] = v_fb_n_noise

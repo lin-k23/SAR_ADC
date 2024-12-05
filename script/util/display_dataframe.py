@@ -15,6 +15,7 @@ def display_dataframe(cfg_info, type):
                         ("font-size", "14px"),  # 字体大小
                         ("text-align", "center"),
                         ("min-width", "150px"),
+                        # ("border", "1px solid black"),
                     ],
                 },  # 表头列宽
                 {
@@ -44,13 +45,15 @@ def display_dataframe(cfg_info, type):
                         ("font-weight", "bold"),  # 字体加粗
                         ("text-align", "center"),  # 居中显示
                     ],
-                },  # 字体颜色
+                },
+                # 设置表格边框
                 {
                     "selector": "td",
                     "props": [
-                        ("text-align", "center"),  # 居中显示
+                        ("color", "#1F2937"),  # 深灰色字体
+                        ("border", "3px solid #D1D5DB"),  # 单元格边框
                     ],
-                },  # 字体颜色
+                },
             ]
         )
         .set_table_attributes('class="dataframe table table-striped"')
@@ -62,3 +65,8 @@ def display_dataframe(cfg_info, type):
     display(HTML("<div style='text-align: center"))
     display(styled_df)
     display(HTML("</div>"))
+
+
+def get_config_info(conf_name, pr):
+    pr["conf_name"] = conf_name
+    print(f"config file: {conf_name}")

@@ -219,7 +219,7 @@ class Analyser:
         n_bits = 11
         n_seg_check = 3
         n_stage2 = 2
-        n_stage_bits = np.array([np.sum(weight_nom_1), np.sum(weight_nom_2)])
+        n_stage_bits = np.array([len(weight_nom_1), len(weight_nom_2)])
         n_out = 2
 
         ## alignment
@@ -234,24 +234,23 @@ class Analyser:
         ed = n_out * self.pr["N_fft"] + st - 1
         shift = 0
         for i1 in range(n_out):
-            if addr[st - 1] == self.pr["channel_mapping" + str(i1)]:
-                shift = n_out + 2 - (out_sequence.tolist().index(i1))
+            if addr[st - 1] == self.pr["channel_mapping" + str(i1 + 1)]:
+                shift = n_out - (out_sequence.tolist().index(i1 + 1))
             tmp = []
             tmp2 = []
-            data = np.zeros([self.pr["N_fft"], n_bits])
+            # data = np.zeros([self.pr["N_fft"], n_bits])
             for i2 in range(n_stage):
-                data[:, :] = digital_code[
+                data = digital_code[
                     st
                     + shift
                     + shift_sequence[i2] : ed
                     + 1
                     + shift
-                    + shift_sequence[i2],
-                    :n_out,
+                    + shift_sequence[i2] : n_out,
                     :,
                 ]
                 tmp.append(data[:, -int(n_stage_bits[i2]) :])
-            tmp2 = tmp
+            tmp2 = [np.copy(arr) for arr in tmp]
             for i3 in range(len(kb_include)):
                 data_d = digital_code[
                     st
@@ -261,8 +260,7 @@ class Analyser:
                     - n_out : ed
                     + shift
                     + shift_sequence[kb_include[i3]]
-                    - n_out,
-                    :n_out,
+                    - n_out : n_out,
                     :,
                 ]
                 tmp2.append(data_d[:, -n_stage_bits[kb_include[i3]] :])

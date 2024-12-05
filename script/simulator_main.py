@@ -13,7 +13,7 @@ mdl = preset_mdl()
 # 调用函数获取测试参数
 pr = preset_pr()
 pr["conf_name"] = input("sar/tisar/pipesar2s/nssar1o1c/nssar1o1ccp\n")
-config_file_path = os.path.join("../config", pr["conf_name"])
+config_file_path = os.path.join("..\config", pr["conf_name"])
 print(config_file_path)
 pr_loaded = load_assembler_xlsx(config_file_path)
 # update pr with pr_loaded
