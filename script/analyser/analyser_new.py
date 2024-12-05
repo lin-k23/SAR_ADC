@@ -77,10 +77,10 @@ class Analyser:
         # Plot da without calibration
         plt.figure(figsize=(18, 5))
 
-        # plt.subplot(1, 3, 1)
-        # img = Image.open("..\pic\\nssar1o1c.png")
-        # plt.imshow(img)
-        # plt.axis("off")
+        plt.subplot(1, 3, 1)
+        img = Image.open("..\pic\\sar.png")
+        plt.imshow(img)
+        plt.axis("off")
 
         plt.subplot(1, 3, 2)
         plt.plot(data_nocal[:n_pts_plot], "-o")
@@ -237,7 +237,7 @@ class Analyser:
 
     def _pipesar2s_analyser(self):
         addr, _, digital_code = self.dout_parse()
-        digital_code = digital_code[-self.pr["N_fft"] :, :]
+        data = digital_code[-self.pr["N_fft"] :, :]
 
         ## para
         weight_nom_1 = np.array(self.mdl["n_wgt_sar1"] + [0, 0, 0, 0, 0, 0])
@@ -251,56 +251,53 @@ class Analyser:
         n_bits = len(weight_nom_1) + len(weight_nom_2)
         n_seg_check = 3
         n_stage2 = 2
-        n_stage_bits = np.array([len(weight_nom_1), len(weight_nom_2)])
+        n_stage_bits = np.array([5, 11])
         n_out = 2
-
-        ## alignment
-        data_comb = np.zeros([self.pr["N_fft"], np.sum(n_stage_bits)])
-        data_comb_kb = np.zeros(
-            [
-                self.pr["N_fft"],
-                np.sum(n_stage_bits) + np.sum(n_stage_bits[kb_include - 1]),
-            ]
-        )
         st = 2
         ed = n_out * self.pr["N_fft"] + st - 1
         shift = 0
         for i1 in range(n_out):
             if addr[st - 1] == self.pr["channel_mapping" + str(i1 + 1)]:
-                shift = n_out - (np.where(out_sequence == i1 + 1)[0][0] + 1)
-            tmp = []
-            tmp2 = []
-            for i2 in range(n_stage):
-                data = digital_code[
-                    st
-                    + shift
-                    + shift_sequence[i2] : ed
-                    + 1
-                    + shift
-                    + shift_sequence[i2] : n_out,
-                    :,
-                ]
-                tmp.append(data[:, -int(n_stage_bits[i2]) :])
-            tmp2 = [np.copy(arr) for arr in tmp]
-            for i3 in range(len(kb_include)):
-                data_d = digital_code[
-                    st
-                    + shift
-                    + shift_sequence[kb_include[i3]]
-                    - 1
-                    - n_out : ed
-                    + shift
-                    + shift_sequence[kb_include[i3]]
-                    - n_out : n_out,
-                    :,
-                ]
-                tmp2.append(data_d[:, -n_stage_bits[kb_include[i3]] :])
+                shift = n_out - (np.where(out_sequence == (i1 + 1))[0][0])
+        tmp = []
+        tmp2 = []
+        # loop 1 n_stage begin
+        for i2 in range(n_stage):
+            data = digital_code[
+                st
+                + shift
+                + shift_sequence[i2] : ed
+                + 1
+                + shift
+                + shift_sequence[i2] : n_out,
+                :,
+            ]
+            # tmp = [tmp,data(:,end-n_stage_bits(i1)+1:end)];
+            tmp.append(data[:, -n_stage_bits[i2] :])
+            tmp = tmp + data[:, n_stage_bits[i2] :]
 
-            data_comb[:, :] = np.hstack(tmp)
-            data_comb_kb[:, :] = np.hstack(tmp2)
+        tmp2 = [np.copy(arr) for arr in tmp]
+        # loop 2 kb_include begin
+        for i3 in range(len(kb_include)):
+            data_d = digital_code[
+                st
+                + shift
+                + shift_sequence[kb_include[i3]]
+                - 1
+                - n_out : ed
+                + shift
+                + shift_sequence[kb_include[i3]]
+                - n_out : n_out,
+                :,
+            ]
+            tmp2.append(data_d[:, -n_stage_bits[kb_include[i3]] :])
+
+            # data_comb[:, :] = np.hstack(tmp)
+            # data_comb_kb[:, :] = np.hstack(tmp2)
 
         ## calibration
         n_pts_plot = self.pr["N_fft"] // 64
+        tmp = np.array(tmp)
         plt.figure(figsize=(15, 6))
 
         for i1 in range(n_seg_check):
@@ -332,7 +329,7 @@ class Analyser:
             for ix in range(p_last_nonzero + 1):
                 ed += n_stage_bits[ix]
 
-            data_seg = data_comb[:, st - 1 : ed]
+            data_seg = tmp[:, st - 1 : ed]
             aout_seg = weight_seg @ data_seg.T
 
             plt.subplot(2, n_seg_check, i1 + 1)
