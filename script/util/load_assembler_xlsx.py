@@ -20,15 +20,10 @@ def load_assembler_xlsx(path_config):
     conf_table = os.path.join(path_config, "timing_table_1.xlsx")
     pr["conf_table"] = pd.read_excel(conf_table, index_col=0)
     print(f"Loading file: {f_assembler}")
-
     # 检查文件是否存在
     if os.path.exists(f_assembler):
         # 读取 Excel 文件
-        pr["T_assembler"] = pd.read_excel(
-            f_assembler, index_col=0
-        )  # index_col=0 用于将第一列作为行名
-        # 把数据读打印放在主函数中
-        # print(pr['T_assembler'])
+        pr["T_assembler"] = pd.read_excel(f_assembler, index_col=0)
 
         # 获取行数
         row = len(pr["T_assembler"].index)
