@@ -14,10 +14,9 @@ def display_dataframe(cfg_info, type):
                         ("background-color", "#1E3A8A"),  # 深蓝色背景
                         ("color", "white"),
                         ("font-weight", "bold"),
-                        ("font-size", "14px"),  # 字体大小
+                        ("font-size", "20px"),  # 字体大小
                         ("text-align", "center"),
                         ("min-width", "150px"),
-                        # ("border", "1px solid black"),
                     ],
                 },  # 表头列宽
                 {
@@ -26,7 +25,7 @@ def display_dataframe(cfg_info, type):
                         ("background-color", "#F1F5F9"),  # 浅灰色背景
                         ("color", "#1F2937"),  # 深灰色字体
                         ("font-weight", "bold"),
-                        ("font-size", "16px"),
+                        ("font-size", "20px"),
                         ("min-width", "150px"),  # 设置列宽
                         ("max-width", "300px"),  # 最大宽度限制
                         ("height", "40px"),
@@ -37,7 +36,7 @@ def display_dataframe(cfg_info, type):
                     "props": [
                         ("font-weight", "bold"),  # 标题加粗
                         ("color", "white"),
-                        ("font-size", "20px"),  # 标题字体大小
+                        ("font-size", "25px"),  # 标题字体大小
                     ],
                 },  # 标题高亮
                 # 设置表头字体粗细和颜色
@@ -61,7 +60,7 @@ def display_dataframe(cfg_info, type):
         .set_table_attributes('class="dataframe table table-striped"')
         .set_properties(**{"text-align": "center"})
         .set_caption(
-            f"Configuration Information for {type}",
+            f"Timing Table",
         )
     )
     display(HTML("<div style='text-align: center"))

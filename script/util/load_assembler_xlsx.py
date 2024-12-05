@@ -53,5 +53,5 @@ def load_assembler_xlsx(path_config):
         patch_data = pd.read_excel(f_patch)
         for x in patch_data["Item"].values:
             pr[x] = patch_data.loc[patch_data["Item"] == x, "Value"].values[0]
-            print(f"[{__name__}] parameter {x} loaded: pr[{x}]= {pr[x]}")
+            # print(f"[{__name__}] parameter {x} loaded: pr[{x}]= {pr[x]}")
     return pr
