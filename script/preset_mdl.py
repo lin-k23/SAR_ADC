@@ -1,6 +1,5 @@
 def preset_mdl():
     mdl = {
-        "is_verbose": 0,  # Verbose level
         # Architectural parameters
         "n_cb": 6,  # Conversion block number
         "n_in_bus": 2,  # Input bus number
@@ -13,10 +12,10 @@ def preset_mdl():
         "v_ref": 0.9,  # Vref
         # SAR weight
         "n_wgt_sar1": [256, 128, 64, 32, 16],
-        "n_wgt_sar2": [8, 4, 2, 1, 0.5, 0.25],
+        "n_wgt_sar2": [16, 8, 4, 2, 1, 0.5],
         "cu_cdac": 2e-15,
         # Bridge cap
-        "cu_bridge": 10e-15,  # Unit cap size of bridge cap
+        "cu_bridge": 50e-15,  # Unit cap size of bridge cap
         "n_cu_Cmin1": 5,
         "n_cu_Cmin2": 10,
         "n_cu_Cmaj": 25,
@@ -37,7 +36,7 @@ def preset_mdl():
         "a_nl2_amp": -60,  # Amp nonlinearity 2nd order coefficient, in dB
         "a_nl3_amp": -60,  # Amp nonlinearity 3rd order coefficient, in dB
         # Non-ideality
-        "is_nonideal": 0,
+        "is_nonideal": 1,
         "is_verbose": 0,
     }
 

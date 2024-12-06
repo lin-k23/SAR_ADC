@@ -55,6 +55,7 @@ class Analyser:
             "nssar1o1c": self._nssar1o1c_analyser,
             "nssar1o1ccp": self._noisar1o1ccp_analyser,
             "pipesar2s": self._pipesar2s_analyser,
+            "pipesar3s": self._pipesar3s_analyser,
             "pipesar3shp": self._pipesar3shp_analyser,
         }
         if self.mode in mode_mappinng:
@@ -76,23 +77,9 @@ class Analyser:
         # Plot da without calibration
         plt.figure(figsize=(10, 6))
 
-        # plt.subplot(1, 2, 1)
-        # img = Image.open("../pic/sar.png")
-        # plt.imshow(img)
-        # plt.axis("off")
-
-        # plt.subplot(1, 3, 2)
-        # plt.plot(data_nocal[:n_pts_plot], "-o")
-        # plt.ylim([0, np.sum(self.weight_nom)])
-        # plt.xlim([0, n_pts_plot])
-        # plt.title("No Calibration")
-
-        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlot(
             data_nocal.reshape(1, -1).T, self.pr["F_s"], np.sum(self.weight_nom)
         )
-        # offset_nocal = np.mean(data_nocal) - np.sum(self.weight_nom) / 2
-        # print(f"offset_nocal = {offset_nocal:.2f} LSB")
 
     def _tisar_analyser(self):
         """
@@ -136,18 +123,6 @@ class Analyser:
 
         # Plot da without calibration
         plt.figure(figsize=(10, 6))
-        # plt.subplot(1, 2, 1)
-        # img = Image.open("../pic/tisar.png")
-        # plt.imshow(img)
-        # plt.axis("off")
-        # plt.subplot(1, 3, 2)
-        # n_pts_plot = pr_N_fft // 1
-        # plt.plot(data_cal[:n_pts_plot])
-        # plt.ylim([0, np.sum(weight1)])
-        # plt.xlim([0, n_pts_plot])
-        # plt.title("No Calibration")
-        # plt.subplot(1, 2, 2)
-        # Calculate metrics using a Python equivalent of specPlot
         ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
             data_cal.reshape(1, -1).T, self.pr["F_s"], np.sum(weight1)
         )
@@ -164,18 +139,6 @@ class Analyser:
 
         plt.figure(figsize=(10, 6))
 
-        # plt.subplot(1, 2, 1)
-        # img = Image.open("../pic/sarx4.png")
-        # plt.imshow(img)
-        # plt.axis("off")
-
-        # plt.subplot(1, 2, 1)
-        # n_pts_plot = self.pr["N_fft"] // 1
-        # plt.plot(aout[:n_pts_plot])
-        # plt.ylim([0, np.sum(weight_nom)])
-        # plt.xlim([0, n_pts_plot])
-
-        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlotOS(
             aout.reshape(1, -1),
             self.pr["N_fft"],
@@ -184,7 +147,6 @@ class Analyser:
             harmonic=5,
             OSR=OSR,
         )
-        # self.plot_triangle(1, 8e6, -100, 3)
 
     def _noisar1o1ccp_analyser(self):
         """
@@ -197,11 +159,11 @@ class Analyser:
         data_rec_1 = digital_code[10 : self.pr["N_fft"] + 10 : 2, :]
         data_rec_2 = digital_code[1 + 10 : self.pr["N_fft"] + 10 : 2, :]
 
-        # 初始化 data_nocal
+        # initialise data_nocal
         data_comb = np.zeros(self.pr["N_fft"])
         data_comb1 = np.zeros(self.pr["N_fft"])
         data_nocal = np.zeros(self.pr["N_fft"])
-        # 计算 data_nocal
+        # caculate data_nocal
         aout1 = weight_nom @ data_rec_1[:, :].T
         aout2 = weight_nom @ data_rec_2[:, :].T
         data_comb[0::2] = aout1
@@ -210,20 +172,6 @@ class Analyser:
 
         plt.figure(figsize=(10, 6))
 
-        # plt.subplot(1, 2, 1)
-        # img = Image.open("../pic/nssar1o1ccp.png")
-        # plt.imshow(img)
-        # plt.axis("off")
-
-        # plt.subplot(1, 3, 2)
-        # n_pts_plot = self.pr["N_fft"] // 1
-        # data_comb1[0::2] = aout1
-        # data_comb1[1::2] = aout2
-        # plt.plot(data_comb[:n_pts_plot])
-        # plt.ylim([0, np.sum(weight_nom)])
-        # plt.xlim([0, n_pts_plot])
-        # 创建绘图窗口
-        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlotOS(
             data_nocal.reshape(1, -1),
             self.pr["N_fft"],
@@ -233,7 +181,7 @@ class Analyser:
             OSR=OSR,
         )
 
-    def _pipesar2s_analyser(self):
+    def _pipesar2s_analyser_back(self):
         addr, _, digital_code = self.dout_parse()
         data = digital_code[-self.pr["N_fft"] :, :]
 
@@ -296,7 +244,7 @@ class Analyser:
         ## calibration
         n_pts_plot = self.pr["N_fft"] // 64
         tmp = np.array(tmp)
-        plt.figure(figsize=(15, 6))
+        # plt.figure(figsize=(15, 6))
 
         for i1 in range(n_seg_check):
             weight_seg = []
@@ -342,6 +290,88 @@ class Analyser:
                 aout_seg, self.pr["F_s"], np.sum(weight_seg)
             )
 
-    def _pipesar3shp_analyser(self):
+    def _pipesar2s_analyser(self):
+        addr, _, digital_code = self.dout_parse()
+        code1 = digital_code[2 : self.pr["N_fft"] * 2 + 2 : 2, 6:11]
+        code2 = digital_code[3 : self.pr["N_fft"] * 2 + 3 : 2, :]
+        # print(code1[0:2, :])
+        # print(code1.shape)
+        # print(code1[0:2, :])
+        # print(code1.shape)
 
-        pass
+        n_weight2_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
+        # n_weight2_nom = np.array([256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        aout1 = code1 @ self.mdl["n_wgt_sar1"]
+        aout2 = code2 @ n_weight2_nom
+        n_weight_nom = np.concatenate(
+            (np.array(self.mdl["n_wgt_sar1"]) * 8, n_weight2_nom), axis=0
+        )
+
+        aout = aout1 * 8 + aout2 * 1
+        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
+            aout.reshape(1, -1).T, self.pr["F_s"], np.sum(n_weight_nom)
+        )
+        print(ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h)
+
+    def _pipesar3shp_analyser(self):
+        addr, _, digital_code = self.dout_parse()
+        code1 = digital_code[3 : self.pr["N_fft"] * 3 + 3 : 3, 6:11]
+        code2 = digital_code[4 : self.pr["N_fft"] * 3 + 4 : 3, 6:11]
+        code3 = digital_code[5 : self.pr["N_fft"] * 3 + 5 : 3, :]
+        # print(code1[0:2, :])
+        # print(code1.shape)
+        # print(code1[0:2, :])
+        # print(code1.shape)
+
+        n_weight2_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
+        # n_weight2_nom = np.array([256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        aout1 = code1 @ self.mdl["n_wgt_sar1"]
+        aout2 = code2 @ self.mdl["n_wgt_sar1"]
+        aout3 = code3 @ n_weight2_nom
+        n_weight_nom = np.concatenate(
+            (
+                np.array(self.mdl["n_wgt_sar1"]) * 8 * 8,
+                np.array(self.mdl["n_wgt_sar1"]) * 8,
+                n_weight2_nom,
+            ),
+            axis=0,
+        )
+
+        aout = aout1 * 8 * 8 + aout2 * 8 + aout3
+        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
+            aout.reshape(1, -1).T, self.pr["F_s"], np.sum(n_weight_nom)
+        )
+        print(ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h)
+
+    def _pipesar3s_analyser(self):
+        addr, _, digital_code = self.dout_parse()
+        code1 = digital_code[3 : self.pr["N_fft"] * 3 + 3 : 3, 6:11]
+        code2 = digital_code[5 : self.pr["N_fft"] * 3 + 5 : 3, 6:11]
+        code3 = digital_code[7 : self.pr["N_fft"] * 3 + 7 : 3, :]
+        # print(code1[0:2, :])
+        # print(code1.shape)
+        # print(code1[0:2, :])
+        # print(code1.shape)
+
+        n_weight2_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
+        # n_weight2_nom = np.array([256, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        aout1 = code1 @ self.mdl["n_wgt_sar1"]
+        aout2 = code2 @ self.mdl["n_wgt_sar1"]
+        aout3 = code3 @ n_weight2_nom
+        n_weight_nom = np.concatenate(
+            (
+                np.array(self.mdl["n_wgt_sar1"]) * 8 * 8,
+                np.array(self.mdl["n_wgt_sar1"]) * 8,
+                n_weight2_nom,
+            ),
+            axis=0,
+        )
+
+        aout = aout1 * 8 * 8 + aout2 * 8 + aout3
+        ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
+            aout.reshape(1, -1).T, self.pr["F_s"], np.sum(n_weight_nom)
+        )
+        print(ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h)

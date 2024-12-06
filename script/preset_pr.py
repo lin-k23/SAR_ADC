@@ -35,7 +35,7 @@ def preset_pr():
         "channel_mapping4": 4,
         "channel_mapping5": 5,
         "channel_mapping6": 6,
-        "v_in_peak": 0.85,
+        "v_in_peak": 0.9,
     }
     return pr
 
