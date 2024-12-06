@@ -6,12 +6,11 @@ from analyser.analyser_new import Analyser  # 导入 AnalyserSar 类
 from util.load_assembler_xlsx import load_assembler_xlsx
 import matplotlib.pyplot as plt  # 导入 matplotlib 库
 import os
-import pandas as pd
 
 mdl = preset_mdl()
 pr = preset_pr()
 # pr["conf_name"] = input("sar/tisar/pipesar2s/nssar1o1c/nssar1o1ccp\n")
-pr["conf_name"] = "sar"
+pr["conf_name"] = "nssar1o1c"
 config_file_path = os.path.join("..\config", pr["conf_name"])
 print(config_file_path)
 pr_loaded = load_assembler_xlsx(config_file_path)

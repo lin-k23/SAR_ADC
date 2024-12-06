@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from util.specPlot import specPlot
 from util.specPlot import specPlotOS
-from PIL import Image
 
 
 # class Analyser:
@@ -69,31 +68,31 @@ class Analyser:
         """
         self.weight_nom = np.array(self.mdl["n_wgt_sar1"] + self.mdl["n_wgt_sar2"])
 
-        n_pts_plot = 16
+        # n_pts_plot = 16
         _, _, da_1 = self.dout_parse()
         da = da_1[-self.pr["N_fft"] - 2 : -2, :]
         data_nocal = self.weight_nom @ da[:, :].T
 
         # Plot da without calibration
-        plt.figure(figsize=(18, 5))
+        plt.figure(figsize=(10, 6))
 
-        plt.subplot(1, 3, 1)
-        img = Image.open("..\pic\\sar.png")
-        plt.imshow(img)
-        plt.axis("off")
+        # plt.subplot(1, 2, 1)
+        # img = Image.open("../pic/sar.png")
+        # plt.imshow(img)
+        # plt.axis("off")
 
-        plt.subplot(1, 3, 2)
-        plt.plot(data_nocal[:n_pts_plot], "-o")
-        plt.ylim([0, np.sum(self.weight_nom)])
-        plt.xlim([0, n_pts_plot])
-        plt.title("No Calibration")
+        # plt.subplot(1, 3, 2)
+        # plt.plot(data_nocal[:n_pts_plot], "-o")
+        # plt.ylim([0, np.sum(self.weight_nom)])
+        # plt.xlim([0, n_pts_plot])
+        # plt.title("No Calibration")
 
-        plt.subplot(1, 3, 3)
+        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlot(
             data_nocal.reshape(1, -1).T, self.pr["F_s"], np.sum(self.weight_nom)
         )
-        offset_nocal = np.mean(data_nocal) - np.sum(self.weight_nom) / 2
-        print(f"offset_nocal = {offset_nocal:.2f} LSB")
+        # offset_nocal = np.mean(data_nocal) - np.sum(self.weight_nom) / 2
+        # print(f"offset_nocal = {offset_nocal:.2f} LSB")
 
     def _tisar_analyser(self):
         """
@@ -136,18 +135,18 @@ class Analyser:
         data_cal[:] = data_comb_run[: pr_N_fft * 3] + np.sum(weight1) / 2
 
         # Plot da without calibration
-        plt.figure(figsize=(18, 5))
-        plt.subplot(1, 3, 1)
-        img = Image.open("..\pic\\tisar.png")
-        plt.imshow(img)
-        plt.axis("off")
-        plt.subplot(1, 3, 2)
-        n_pts_plot = pr_N_fft // 1
-        plt.plot(data_cal[:n_pts_plot])
-        plt.ylim([0, np.sum(weight1)])
-        plt.xlim([0, n_pts_plot])
-        plt.title("No Calibration")
-        plt.subplot(1, 3, 3)
+        plt.figure(figsize=(10, 6))
+        # plt.subplot(1, 2, 1)
+        # img = Image.open("../pic/tisar.png")
+        # plt.imshow(img)
+        # plt.axis("off")
+        # plt.subplot(1, 3, 2)
+        # n_pts_plot = pr_N_fft // 1
+        # plt.plot(data_cal[:n_pts_plot])
+        # plt.ylim([0, np.sum(weight1)])
+        # plt.xlim([0, n_pts_plot])
+        # plt.title("No Calibration")
+        # plt.subplot(1, 2, 2)
         # Calculate metrics using a Python equivalent of specPlot
         ENoB, SNDR, SFDR, SNR, THD, pwr, NF, h = specPlot(
             data_cal.reshape(1, -1).T, self.pr["F_s"], np.sum(weight1)
@@ -163,20 +162,20 @@ class Analyser:
         data = digital_code[-self.pr["N_fft"] :, :]
         aout = weight_nom @ data.T
 
-        plt.figure(figsize=(18, 5))
+        plt.figure(figsize=(10, 6))
 
-        plt.subplot(1, 3, 1)
-        img = Image.open("..\pic\\nssar1o1c.png")
-        plt.imshow(img)
-        plt.axis("off")
+        # plt.subplot(1, 2, 1)
+        # img = Image.open("../pic/sarx4.png")
+        # plt.imshow(img)
+        # plt.axis("off")
 
-        plt.subplot(1, 3, 2)
-        n_pts_plot = self.pr["N_fft"] // 1
-        plt.plot(aout[:n_pts_plot])
-        plt.ylim([0, np.sum(weight_nom)])
-        plt.xlim([0, n_pts_plot])
+        # plt.subplot(1, 2, 1)
+        # n_pts_plot = self.pr["N_fft"] // 1
+        # plt.plot(aout[:n_pts_plot])
+        # plt.ylim([0, np.sum(weight_nom)])
+        # plt.xlim([0, n_pts_plot])
 
-        plt.subplot(1, 3, 3)
+        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlotOS(
             aout.reshape(1, -1),
             self.pr["N_fft"],
@@ -209,23 +208,22 @@ class Analyser:
         data_comb[1::2] = np.sum(weight_nom) - aout2
         data_nocal[:] = data_comb + np.sum(weight_nom) / 2
 
-        plt.figure(figsize=(18, 5))
+        plt.figure(figsize=(10, 6))
 
-        plt.subplot(1, 3, 1)
-        img = Image.open("../pic/nssar1o1ccp.png")
-        plt.imshow(img)
-        plt.axis("off")
+        # plt.subplot(1, 2, 1)
+        # img = Image.open("../pic/nssar1o1ccp.png")
+        # plt.imshow(img)
+        # plt.axis("off")
 
-        plt.subplot(1, 3, 2)
-        n_pts_plot = self.pr["N_fft"] // 1
-        data_comb1[0::2] = aout1
-        data_comb1[1::2] = aout2
-        plt.plot(data_comb[:n_pts_plot])
-        plt.ylim([0, np.sum(weight_nom)])
-        plt.xlim([0, n_pts_plot])
+        # plt.subplot(1, 3, 2)
+        # n_pts_plot = self.pr["N_fft"] // 1
+        # data_comb1[0::2] = aout1
+        # data_comb1[1::2] = aout2
+        # plt.plot(data_comb[:n_pts_plot])
+        # plt.ylim([0, np.sum(weight_nom)])
+        # plt.xlim([0, n_pts_plot])
         # 创建绘图窗口
-        plt.subplot(1, 3, 3)
-        plt.title("No Calibration")
+        # plt.subplot(1, 2, 2)
         _, _, _, _, _, _, _, _ = specPlotOS(
             data_nocal.reshape(1, -1),
             self.pr["N_fft"],

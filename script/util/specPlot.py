@@ -207,13 +207,13 @@ def specPlotOS(
     spec = np.zeros(N_fft)
     ME = 0
     for iter in range(M):
-        tdata = data[iter - 1, :]
+        tdata = data[iter, :]
         if np.sqrt(np.mean(tdata**2)) == 0:
             continue
         tdata = tdata / maxCode
         tdata = tdata - np.mean(tdata)
         tdata = tdata * win / np.sqrt(np.mean(win**2))
-        spec += np.abs(fft(tdata)) ** 2
+        spec += np.abs(np.fft.fft(tdata)) ** 2
         ME += 1
 
     spec = spec[:Nd2]

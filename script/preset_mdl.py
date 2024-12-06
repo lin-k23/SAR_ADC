@@ -1,6 +1,6 @@
 def preset_mdl():
     mdl = {
-        "is_verbose": 3,  # Verbose level
+        "is_verbose": 0,  # Verbose level
         # Architectural parameters
         "n_cb": 6,  # Conversion block number
         "n_in_bus": 2,  # Input bus number
@@ -37,20 +37,19 @@ def preset_mdl():
         "a_nl2_amp": -60,  # Amp nonlinearity 2nd order coefficient, in dB
         "a_nl3_amp": -60,  # Amp nonlinearity 3rd order coefficient, in dB
         # Non-ideality
-        "is_nonideal": 1,
+        "is_nonideal": 0,
         "is_verbose": 0,
     }
 
     mdl.update(
         {
-            "en_noi_cdac": 1 * mdl["is_nonideal"],  # Noise of CDAC sampling
-            "en_noi_cmp": 1 * mdl["is_nonideal"],  # Noise of comparator
-            "en_noi_amp": 1 * mdl["is_nonideal"],  # Noise of gm cell
-            "en_noi_cfb": 1
-            * mdl["is_nonideal"],  # Noise of feedback caps (cmin and cmaj)
-            "en_os_cmp": 1 * mdl["is_nonideal"],  # Offset of comparator
-            "en_os_amp": 1 * mdl["is_nonideal"],  # Offset of gm cell
-            "en_chs_error": 1 * mdl["is_nonideal"],  # Bridge cap parasitics
+            "en_noi_cdac": 1 * mdl["is_nonideal"],
+            "en_noi_cmp": 1 * mdl["is_nonideal"],
+            "en_noi_amp": 1 * mdl["is_nonideal"],
+            "en_noi_cfb": 1 * mdl["is_nonideal"],
+            "en_os_cmp": 1 * mdl["is_nonideal"],
+            "en_os_amp": 1 * mdl["is_nonideal"],
+            "en_chs_error": 1 * mdl["is_nonideal"],
         }
     )
     return mdl
