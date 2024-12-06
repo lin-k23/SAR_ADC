@@ -14,7 +14,7 @@ def display_dataframe(cfg_info, type):
                         ("background-color", "#1E3A8A"),  # 深蓝色背景
                         ("color", "white"),
                         ("font-weight", "bold"),
-                        ("font-size", "20px"),  # 字体大小
+                        ("font-size", "26px"),  # 字体大小
                         ("text-align", "center"),
                         ("min-width", "150px"),
                     ],
