@@ -10,7 +10,7 @@ import os
 mdl = preset_mdl()
 pr = preset_pr()
 # pr["conf_name"] = input("sar/tisar/pipesar2s/nssar1o1c/nssar1o1ccp\n")
-pr["conf_name"] = "pipesar3s"
+pr["conf_name"] = "sar"
 config_file_path = os.path.join("..\config", pr["conf_name"])
 print(config_file_path)
 pr_loaded = load_assembler_xlsx(config_file_path)

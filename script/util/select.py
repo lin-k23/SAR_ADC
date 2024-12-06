@@ -5,7 +5,7 @@ def select(mode):
         "2-stage Pipe-Sar": "pipesar2s",
         "1st-order NS-SAR": "nssar1o1c",
         "1st-order NS-SAR(with chopping)": "nssar1o1ccp",
-        "3-stage Pipe-Sar": "pipesar3shp",
+        "3-stage Pipe-Sar": "pipesar3s",
     }
     return dict[mode]
 
